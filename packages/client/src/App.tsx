@@ -1,48 +1,108 @@
-import { useComponentValue } from "@latticexyz/react";
-import { useMUD } from "./MUDContext";
-import { singletonEntity } from "@latticexyz/store-sync/recs";
+import { useComponentValue } from '@latticexyz/react';
+import { useMUD } from './MUDContext';
+import { singletonEntity } from '@latticexyz/store-sync/recs';
+import { useCardano, ConnectWalletList } from '@cardano-foundation/cardano-connect-with-wallet';
 
 export const App = () => {
   const {
     components: { World },
     systemCalls: { createCharacter },
   } = useMUD();
-  
+
+  const { isConnected, stakeAddress, disconnect } = useCardano();
+
   const world = useComponentValue(World, singletonEntity);
+
+  const onConnect = () => {};
 
   return (
     <>
       <div>
+        {isConnected ? (
+          <div>
+            <span>{stakeAddress}</span>
+            <button onClick={disconnect}>disconnect</button>
+          </div>
+        ) : (
+          <ConnectWalletList
+            borderRadius={15}
+            gap={12}
+            primaryColor="#0538AF"
+            onConnect={onConnect}
+            customCSS={`
+              font-family: Helvetica Light,sans-serif;
+              font-size: 0.875rem;
+              font-weight: 700;
+              width: 164px;
+              & > span { padding: 5px 16px; }
+            `}
+          />
+        )}
+      </div>
+
+      <div>
         <h5>World Data</h5>
-        <li>Archers: <span>{world?.characterPopulation[0] ?? "??"}</span></li>
-        <li>Artisan: <span>{world?.characterPopulation[1] ?? "??"}</span></li>
-        <li>Alchemist: <span>{world?.characterPopulation[2] ?? "??"}</span></li>
-        <li>Blacksmith: <span>{world?.characterPopulation[3] ?? "??"}</span></li>
-        <li>Chef: <span>{world?.characterPopulation[4] ?? "??"}</span></li>
-        <li>Magician: <span>{world?.characterPopulation[5] ?? "??"}</span></li>
-        <li>Merchant: <span>{world?.characterPopulation[6] ?? "??"}</span></li>
-        <li>Priest: <span>{world?.characterPopulation[7] ?? "??"}</span></li>
-        <li>Tailor: <span>{world?.characterPopulation[8] ?? "??"}</span></li>
-        <li>Rebel: <span>{world?.characterPopulation[9] ?? "??"}</span></li>
-        <li>Warrior: <span>{world?.characterPopulation[10] ?? "??"}</span></li>
-        <li>Total Population: <span>{world?.totalPopulation ?? "??"}</span></li>
+        <li>
+          Archers: <span>{world?.characterPopulation[0] ?? '??'}</span>
+        </li>
+        <li>
+          Artisan: <span>{world?.characterPopulation[1] ?? '??'}</span>
+        </li>
+        <li>
+          Alchemist: <span>{world?.characterPopulation[2] ?? '??'}</span>
+        </li>
+        <li>
+          Blacksmith: <span>{world?.characterPopulation[3] ?? '??'}</span>
+        </li>
+        <li>
+          Chef: <span>{world?.characterPopulation[4] ?? '??'}</span>
+        </li>
+        <li>
+          Magician: <span>{world?.characterPopulation[5] ?? '??'}</span>
+        </li>
+        <li>
+          Merchant: <span>{world?.characterPopulation[6] ?? '??'}</span>
+        </li>
+        <li>
+          Priest: <span>{world?.characterPopulation[7] ?? '??'}</span>
+        </li>
+        <li>
+          Tailor: <span>{world?.characterPopulation[8] ?? '??'}</span>
+        </li>
+        <li>
+          Rebel: <span>{world?.characterPopulation[9] ?? '??'}</span>
+        </li>
+        <li>
+          Warrior: <span>{world?.characterPopulation[10] ?? '??'}</span>
+        </li>
+        <li>
+          Total Population: <span>{world?.totalPopulation ?? '??'}</span>
+        </li>
       </div>
 
       <div>
         <h5>Tribe Data</h5>
-        <li>Amazonians Population: <span>{world?.tribePopulation[0] ?? "??"}</span></li>
-        <li>Himalayans Population: <span>{world?.tribePopulation[1] ?? "??"}</span></li>
-        <li>Poseidons Population: <span>{world?.tribePopulation[2] ?? "??"}</span></li>
-        <li>Raes Population: <span>{world?.tribePopulation[3] ?? "??"}</span></li>
-        <li>Tropicals Population: <span>{world?.tribePopulation[4] ?? "??"}</span></li>
+        <li>
+          Amazonians Population: <span>{world?.tribePopulation[0] ?? '??'}</span>
+        </li>
+        <li>
+          Himalayans Population: <span>{world?.tribePopulation[1] ?? '??'}</span>
+        </li>
+        <li>
+          Poseidons Population: <span>{world?.tribePopulation[2] ?? '??'}</span>
+        </li>
+        <li>
+          Raes Population: <span>{world?.tribePopulation[3] ?? '??'}</span>
+        </li>
+        <li>
+          Tropicals Population: <span>{world?.tribePopulation[4] ?? '??'}</span>
+        </li>
       </div>
 
       <div>
         <h5>Functions</h5>
         <p>Choose a class: </p>
-        <select 
-          name="types" id="types" multiple 
-        >
+        <select name="types" id="types" multiple>
           <option value="random">Random</option>
           <option value="archer">Archer</option>
           <option value="artisan">Artisan</option>
@@ -62,7 +122,7 @@ export const App = () => {
           type="button"
           onClick={async (event) => {
             event.preventDefault();
-            console.log("New total population value:", await createCharacter(0));
+            console.log('New total population value:', await createCharacter(0));
           }}
         >
           Create New Character

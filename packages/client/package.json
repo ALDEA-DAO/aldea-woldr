@@ -11,6 +11,7 @@
     "test": "tsc --noEmit"
   },
   "dependencies": {
+    "@cardano-foundation/cardano-connect-with-wallet": "^0.2.9",
     "@latticexyz/common": "2.2.14",
     "@latticexyz/dev-tools": "2.2.14",
     "@latticexyz/react": "2.2.14",
