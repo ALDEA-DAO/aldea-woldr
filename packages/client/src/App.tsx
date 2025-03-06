@@ -1,7 +1,8 @@
 import { useComponentValue } from '@latticexyz/react';
 import { useMUD } from './MUDContext';
 import { singletonEntity } from '@latticexyz/store-sync/recs';
-import { useCardano, ConnectWalletList } from '@cardano-foundation/cardano-connect-with-wallet';
+import { useLaceWallet } from './context/WalletContext';
+import { useState } from 'react';
 
 export const App = () => {
   const {
@@ -9,35 +10,35 @@ export const App = () => {
     systemCalls: { createCharacter },
   } = useMUD();
 
-  const { isConnected, stakeAddress, disconnect } = useCardano();
-
   const world = useComponentValue(World, singletonEntity);
-
-  const onConnect = () => {};
+  const { connected, connectLaceWallet, sendTransaction } = useLaceWallet();
+  const [receiver, setReceiver] = useState<string>('');
+  const [amount, setAmount] = useState<string>('');
 
   return (
     <>
-      <div>
-        {isConnected ? (
-          <div>
-            <span>{stakeAddress}</span>
-            <button onClick={disconnect}>disconnect</button>
-          </div>
-        ) : (
-          <ConnectWalletList
-            borderRadius={15}
-            gap={12}
-            primaryColor="#0538AF"
-            onConnect={onConnect}
-            customCSS={`
-              font-family: Helvetica Light,sans-serif;
-              font-size: 0.875rem;
-              font-weight: 700;
-              width: 164px;
-              & > span { padding: 5px 16px; }
-            `}
+      <div style={{ padding: '20px' }}>
+        <h1>Cardano Lace Wallet</h1>
+
+        {!connected ? <button onClick={connectLaceWallet}>Connect Lace Wallet</button> : <p>✅ Wallet Connected</p>}
+
+        <div>
+          <input
+            type="text"
+            placeholder="Receiver Address"
+            value={receiver}
+            onChange={(e) => setReceiver(e.target.value)}
+            style={{ margin: '10px', width: '300px' }}
           />
-        )}
+          <input
+            type="number"
+            placeholder="Amount (ADA)"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            style={{ margin: '10px' }}
+          />
+          <button onClick={() => sendTransaction(receiver, parseFloat(amount))}>Send ADA</button>
+        </div>
       </div>
 
       <div>
