@@ -1,8 +1,8 @@
 import { useComponentValue } from '@latticexyz/react';
-import { useMUD } from './MUDContext';
 import { singletonEntity } from '@latticexyz/store-sync/recs';
-import { useLaceWallet } from './context/WalletContext';
 import { useState } from 'react';
+import { useLaceWallet } from './context/WalletContext';
+import { useMUD } from './MUDContext';
 
 export const App = () => {
   const {
@@ -11,16 +11,41 @@ export const App = () => {
   } = useMUD();
 
   const world = useComponentValue(World, singletonEntity);
-  const { connected, connectLaceWallet, sendTransaction } = useLaceWallet();
+  const { connected, connectLaceWallet, sendTransaction, networkId, checkIfWalletHoldsNFT } = useLaceWallet();
   const [receiver, setReceiver] = useState<string>('');
   const [amount, setAmount] = useState<string>('');
+
+  const [nftPolicyId, setNftPolicyId] = useState('');
 
   return (
     <>
       <div style={{ padding: '20px' }}>
         <h1>Cardano Lace Wallet</h1>
 
-        {!connected ? <button onClick={connectLaceWallet}>Connect Lace Wallet</button> : <p>✅ Wallet Connected</p>}
+        {!connected ? (
+          <button onClick={connectLaceWallet}>Connect Lace Wallet</button>
+        ) : (
+          <div>
+            <p>✅ Wallet Connected: {networkId}</p>
+            <input
+              placeholder="input nftPolicyId"
+              value={nftPolicyId}
+              onChange={(e) => setNftPolicyId(e.currentTarget.value)}
+            />
+
+            <button
+              onClick={async () => {
+                const hasOwnership = await checkIfWalletHoldsNFT(nftPolicyId);
+
+                console.log('hasOwernshipOfNFT: ', hasOwnership);
+                if (hasOwnership) alert("you've owned nft");
+                else alert("you don't own nft");
+              }}
+            >
+              Verify NFT Ownership
+            </button>
+          </div>
+        )}
 
         <div>
           <input
