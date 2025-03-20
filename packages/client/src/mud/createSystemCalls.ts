@@ -3,10 +3,11 @@
  * for changes in the World state (using the System contracts).
  */
 
-import { getComponentValue } from "@latticexyz/recs";
-import { ClientComponents } from "./createClientComponents";
-import { SetupNetworkResult } from "./setupNetwork";
-import { singletonEntity } from "@latticexyz/store-sync/recs";
+import { getComponentValue } from '@latticexyz/recs';
+import { singletonEntity } from '@latticexyz/store-sync/recs';
+import { erc20Abi, getContract, parseEther } from 'viem';
+import { ClientComponents } from './createClientComponents';
+import { SetupNetworkResult } from './setupNetwork';
 
 export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
@@ -30,7 +31,7 @@ export function createSystemCalls(
    *   syncToRecs
    *   (https://github.com/latticexyz/mud/blob/main/templates/react/packages/client/src/mud/setupNetwork.ts#L77-L83).
    */
-  { worldContract, waitForTransaction }: SetupNetworkResult,
+  { worldContract, waitForTransaction, walletClient, publicClient }: SetupNetworkResult,
   { Character }: ClientComponents,
 ) {
   const createCharacter = async (type: number) => {
@@ -40,6 +41,16 @@ export function createSystemCalls(
      * is in the root namespace, `.increment` can be called directly
      * on the World contract.
      */
+
+    const wALDEAToken = getContract({
+      address: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+      abi: erc20Abi,
+      client: { wallet: walletClient, public: publicClient },
+    });
+
+    const approveTx = await wALDEAToken.write.approve(['0x57044f6b8FADaAEabE1d65e1DD43A697B910D92e', parseEther('50')]);
+    await waitForTransaction(approveTx);
+
     const tx = await worldContract.write.aldea__createCharacter([type]);
     await waitForTransaction(tx);
     return getComponentValue(Character, singletonEntity);

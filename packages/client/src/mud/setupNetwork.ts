@@ -3,25 +3,25 @@
  * (https://viem.sh/docs/getting-started.html).
  * This line imports the functions we need from it.
  */
+import { encodeEntity, syncToRecs } from '@latticexyz/store-sync/recs';
 import {
-  createPublicClient,
-  fallback,
-  webSocket,
-  http,
-  createWalletClient,
-  Hex,
   ClientConfig,
+  createPublicClient,
+  createWalletClient,
+  fallback,
   getContract,
-} from "viem";
-import { encodeEntity, syncToRecs } from "@latticexyz/store-sync/recs";
+  Hex,
+  http,
+  webSocket,
+} from 'viem';
 
-import { getNetworkConfig } from "./getNetworkConfig";
-import { world } from "./world";
-import IWorldAbi from "contracts/out/IWorld.sol/IWorld.abi.json";
-import { createBurnerAccount, transportObserver, ContractWrite } from "@latticexyz/common";
-import { transactionQueue, writeObserver } from "@latticexyz/common/actions";
+import { ContractWrite, createBurnerAccount, transportObserver } from '@latticexyz/common';
+import { transactionQueue, writeObserver } from '@latticexyz/common/actions';
+import IWorldAbi from 'contracts/out/IWorld.sol/IWorld.abi.json';
+import { getNetworkConfig } from './getNetworkConfig';
+import { world } from './world';
 
-import { Subject, share } from "rxjs";
+import { share, Subject } from 'rxjs';
 
 /*
  * Import our MUD config, which includes strong types for
@@ -31,7 +31,7 @@ import { Subject, share } from "rxjs";
  * See https://mud.dev/templates/typescript/contracts#mudconfigts
  * for the source of this information.
  */
-import mudConfig from "contracts/mud.config";
+import mudConfig from 'contracts/mud.config';
 
 export type SetupNetworkResult = Awaited<ReturnType<typeof setupNetwork>>;
 
@@ -60,6 +60,7 @@ export async function setupNetwork() {
    * Create a temporary wallet and a viem client for it
    * (see https://viem.sh/docs/clients/wallet.html).
    */
+
   const burnerAccount = createBurnerAccount(networkConfig.privateKey as Hex);
   const burnerWalletClient = createWalletClient({
     ...clientOptions,
@@ -71,8 +72,10 @@ export async function setupNetwork() {
   /*
    * Create an object for communicating with the deployed World.
    */
+
+  const worldAddress = networkConfig.worldAddress;
   const worldContract = getContract({
-    address: networkConfig.worldAddress as Hex,
+    address: worldAddress as Hex,
     abi: IWorldAbi,
     client: { public: publicClient, wallet: burnerWalletClient },
   });
@@ -94,7 +97,7 @@ export async function setupNetwork() {
   return {
     world,
     components,
-    playerEntity: encodeEntity({ address: "address" }, { address: burnerWalletClient.account.address }),
+    playerEntity: encodeEntity({ address: 'address' }, { address: burnerWalletClient.account.address }),
     publicClient,
     walletClient: burnerWalletClient,
     latestBlock$,
