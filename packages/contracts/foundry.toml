@@ -25,3 +25,6 @@ eth_rpc_url = "https://rpc.garnetchain.com"
 
 [profile.redstone]
 eth_rpc_url = "https://rpc.redstonechain.com"
+
+[etherscan]
+17069 = { key = "847e1c16-69be-4776-a0e0-18666a2037b5", chain = 17069, url = "https://explorer.garnetchain.com/api" }

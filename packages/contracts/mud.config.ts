@@ -2,6 +2,9 @@ import { defineWorld } from "@latticexyz/world";
 
 export default defineWorld({
   namespace: "aldea",
+  deploy: {
+    upgradeableWorldImplementation: true,
+  },
   tables: {
     Player: {
       schema: {
