@@ -25,10 +25,11 @@ contract CharacterSystem is System {
 
   event CharacterCreated(uint32 indexed characterId, address indexed player, bytes32 indexed nftId);
 
-  constructor(address _aldeaToken, address _nftVerifierOracle) {
-    aldeaToken = _aldeaToken;
-    nftVerifierOracle = _nftVerifierOracle;
-  }
+  // Constructor removed - use setters for local testing
+  // constructor(address _aldeaToken, address _nftVerifierOracle) {
+  //   aldeaToken = _aldeaToken;
+  //   nftVerifierOracle = _nftVerifierOracle;
+  // }
 
   enum Classes {
     Archer,

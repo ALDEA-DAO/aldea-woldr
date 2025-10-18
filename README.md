@@ -33,6 +33,7 @@ pnpm build
 ### Deploy Locally
 
 ```bash
+cd packages/contracts
 pnpm deploy:local
 ```
 
