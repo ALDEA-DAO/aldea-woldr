@@ -19,6 +19,9 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 struct CharacterData {
   address player;
   uint32 class;
+  uint32 tribe;
+  int32 x;
+  int32 y;
 }
 
 library Character {
@@ -26,12 +29,12 @@ library Character {
   ResourceId constant _tableId = ResourceId.wrap(0x7462616c64656100000000000000000043686172616374657200000000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0018020014040000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0024050014040404040000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint32)
   Schema constant _keySchema = Schema.wrap(0x0004010003000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (address, uint32)
-  Schema constant _valueSchema = Schema.wrap(0x0018020061030000000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (address, uint32, uint32, int32, int32)
+  Schema constant _valueSchema = Schema.wrap(0x0024050061030323230000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -47,9 +50,12 @@ library Character {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](2);
+    fieldNames = new string[](5);
     fieldNames[0] = "player";
     fieldNames[1] = "class";
+    fieldNames[2] = "tribe";
+    fieldNames[3] = "x";
+    fieldNames[4] = "y";
   }
 
   /**
@@ -151,6 +157,132 @@ library Character {
   }
 
   /**
+   * @notice Get tribe.
+   */
+  function getTribe(uint32 id) internal view returns (uint32 tribe) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    return (uint32(bytes4(_blob)));
+  }
+
+  /**
+   * @notice Get tribe.
+   */
+  function _getTribe(uint32 id) internal view returns (uint32 tribe) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    return (uint32(bytes4(_blob)));
+  }
+
+  /**
+   * @notice Set tribe.
+   */
+  function setTribe(uint32 id, uint32 tribe) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((tribe)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set tribe.
+   */
+  function _setTribe(uint32 id, uint32 tribe) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((tribe)), _fieldLayout);
+  }
+
+  /**
+   * @notice Get x.
+   */
+  function getX(uint32 id) internal view returns (int32 x) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
+    return (int32(uint32(bytes4(_blob))));
+  }
+
+  /**
+   * @notice Get x.
+   */
+  function _getX(uint32 id) internal view returns (int32 x) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
+    return (int32(uint32(bytes4(_blob))));
+  }
+
+  /**
+   * @notice Set x.
+   */
+  function setX(uint32 id, int32 x) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((x)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set x.
+   */
+  function _setX(uint32 id, int32 x) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((x)), _fieldLayout);
+  }
+
+  /**
+   * @notice Get y.
+   */
+  function getY(uint32 id) internal view returns (int32 y) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 4, _fieldLayout);
+    return (int32(uint32(bytes4(_blob))));
+  }
+
+  /**
+   * @notice Get y.
+   */
+  function _getY(uint32 id) internal view returns (int32 y) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 4, _fieldLayout);
+    return (int32(uint32(bytes4(_blob))));
+  }
+
+  /**
+   * @notice Set y.
+   */
+  function setY(uint32 id, int32 y) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 4, abi.encodePacked((y)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set y.
+   */
+  function _setY(uint32 id, int32 y) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 4, abi.encodePacked((y)), _fieldLayout);
+  }
+
+  /**
    * @notice Get the full data.
    */
   function get(uint32 id) internal view returns (CharacterData memory _table) {
@@ -183,8 +315,8 @@ library Character {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(uint32 id, address player, uint32 class) internal {
-    bytes memory _staticData = encodeStatic(player, class);
+  function set(uint32 id, address player, uint32 class, uint32 tribe, int32 x, int32 y) internal {
+    bytes memory _staticData = encodeStatic(player, class, tribe, x, y);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -198,8 +330,8 @@ library Character {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(uint32 id, address player, uint32 class) internal {
-    bytes memory _staticData = encodeStatic(player, class);
+  function _set(uint32 id, address player, uint32 class, uint32 tribe, int32 x, int32 y) internal {
+    bytes memory _staticData = encodeStatic(player, class, tribe, x, y);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -214,7 +346,7 @@ library Character {
    * @notice Set the full data using the data struct.
    */
   function set(uint32 id, CharacterData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.player, _table.class);
+    bytes memory _staticData = encodeStatic(_table.player, _table.class, _table.tribe, _table.x, _table.y);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -229,7 +361,7 @@ library Character {
    * @notice Set the full data using the data struct.
    */
   function _set(uint32 id, CharacterData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.player, _table.class);
+    bytes memory _staticData = encodeStatic(_table.player, _table.class, _table.tribe, _table.x, _table.y);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -243,10 +375,18 @@ library Character {
   /**
    * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function decodeStatic(bytes memory _blob) internal pure returns (address player, uint32 class) {
+  function decodeStatic(
+    bytes memory _blob
+  ) internal pure returns (address player, uint32 class, uint32 tribe, int32 x, int32 y) {
     player = (address(Bytes.getBytes20(_blob, 0)));
 
     class = (uint32(Bytes.getBytes4(_blob, 20)));
+
+    tribe = (uint32(Bytes.getBytes4(_blob, 24)));
+
+    x = (int32(uint32(Bytes.getBytes4(_blob, 28))));
+
+    y = (int32(uint32(Bytes.getBytes4(_blob, 32))));
   }
 
   /**
@@ -260,7 +400,7 @@ library Character {
     EncodedLengths,
     bytes memory
   ) internal pure returns (CharacterData memory _table) {
-    (_table.player, _table.class) = decodeStatic(_staticData);
+    (_table.player, _table.class, _table.tribe, _table.x, _table.y) = decodeStatic(_staticData);
   }
 
   /**
@@ -287,8 +427,14 @@ library Character {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(address player, uint32 class) internal pure returns (bytes memory) {
-    return abi.encodePacked(player, class);
+  function encodeStatic(
+    address player,
+    uint32 class,
+    uint32 tribe,
+    int32 x,
+    int32 y
+  ) internal pure returns (bytes memory) {
+    return abi.encodePacked(player, class, tribe, x, y);
   }
 
   /**
@@ -297,8 +443,14 @@ library Character {
    * @return The lengths of the dynamic fields (packed into a single bytes32 value).
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
-  function encode(address player, uint32 class) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(player, class);
+  function encode(
+    address player,
+    uint32 class,
+    uint32 tribe,
+    int32 x,
+    int32 y
+  ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
+    bytes memory _staticData = encodeStatic(player, class, tribe, x, y);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;

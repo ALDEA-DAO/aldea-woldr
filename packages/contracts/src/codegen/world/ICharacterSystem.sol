@@ -9,5 +9,24 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface ICharacterSystem {
-  function aldea__createCharacter(uint32 class) external returns (uint32);
+  error InsufficientPayment(uint256 required, uint256 provided);
+  error InvalidNFTProof();
+  error InvalidNonce(uint256 expected, uint256 provided);
+  error SignatureExpired(uint256 deadline);
+
+  function aldea__createCharacter(
+    uint32 class,
+    bytes32 nftId,
+    uint256 nonce,
+    uint256 deadline,
+    bytes memory signature
+  ) external returns (uint32);
+
+  function aldea__setAldeaToken(address _aldeaToken) external;
+
+  function aldea__setNFTVerifierOracle(address _nftVerifierOracle) external;
+
+  function aldea__withdrawFees(address to, uint256 amount) external;
+
+  function aldea__getUserNonce(address user) external view returns (uint256);
 }
