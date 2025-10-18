@@ -264,7 +264,7 @@ export class GameScene extends Phaser.Scene {
       this.isPaused = false;
       this.physics.resume();
       this.scene.stop();
-      this.scene.start(GameConfig.SCENES.MENU);
+      this.scene.start('MainMenuScene');
     });
   }
 

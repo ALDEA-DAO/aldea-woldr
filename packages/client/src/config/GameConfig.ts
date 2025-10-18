@@ -11,6 +11,11 @@ export const GameConfig = {
   SCENES: {
     BOOT: 'BootScene',
     MENU: 'MenuScene',
+    MAIN_MENU: 'MainMenuScene',
+    CHARACTER_SELECTION: 'CharacterSelectionScene',
+    LEADERBOARD: 'LeaderboardScene',
+    TRIBE_STATS: 'TribeStatsScene',
+    WORLD_STATS: 'WorldStatsScene',
     GAME: 'GameScene'
   },
   

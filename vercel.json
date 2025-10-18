@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd packages/client && pnpm install && pnpm build",
+  "outputDirectory": "packages/client/dist",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "devCommand": "pnpm --filter 'client' run dev"
+}

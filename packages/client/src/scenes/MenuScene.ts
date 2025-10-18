@@ -18,20 +18,20 @@ export class MenuScene extends Phaser.Scene {
     const height = this.cameras.main.height;
 
     // Title
-    const title = this.add.text(width / 2, height / 4, 'ALDEA GAME', {
+    const title = this.add.text(width / 2, height / 4, 'ALDEA WOLDR', {
       fontSize: '64px',
       color: '#00ff00',
       fontStyle: 'bold'
     }).setOrigin(0.5);
 
     // Subtitle
-    this.add.text(width / 2, height / 4 + 60, 'Open World Adventure', {
+    this.add.text(width / 2, height / 4 + 60, 'Exploring the edges of the unknown', {
       fontSize: '24px',
       color: '#ffffff'
     }).setOrigin(0.5);
 
     // Wallet requirement notice
-    this.add.text(width / 2, height / 4 + 100, 'Requires $ALMA Token to Play', {
+    this.add.text(width / 2, height / 4 + 100, 'Requires $ALMA to play', {
       fontSize: '18px',
       color: '#f39c12',
       fontStyle: 'italic'
@@ -86,17 +86,17 @@ export class MenuScene extends Phaser.Scene {
   private async handleStartGame() {
     // Check if dev mode is enabled (skip wallet verification for local testing)
     const devMode = import.meta.env.VITE_DEV_MODE === 'true';
-    
+
     if (devMode) {
-      this.statusText.setText('🔧 Dev Mode: Skipping wallet verification...\nLoading game...');
+      this.statusText.setText('🔧 Dev Mode: Skipping wallet verification...\nLoading menu...');
       this.statusText.setColor('#f39c12');
-      
+
       this.time.delayedCall(1000, () => {
-        this.scene.start(GameConfig.SCENES.GAME);
+        this.scene.start('MainMenuScene');
       });
       return;
     }
-    
+
     // Check if wallet is already connected
     if (!this.walletManager.isConnected()) {
       this.statusText.setText('Please connect your Cardano wallet first...');
@@ -106,17 +106,17 @@ export class MenuScene extends Phaser.Scene {
 
     // Verify asset ownership
     this.statusText.setText('Verifying $ALMA token ownership...');
-    
+
     try {
       const verification = await this.walletManager.verifyAssetOwnership();
-      
+
       if (verification.hasAccess) {
-        this.statusText.setText('✓ Access granted! Loading game...');
+        this.statusText.setText('✓ Access granted! Loading menu...');
         this.statusText.setColor('#27ae60');
-        
-        // Wait a moment then start game
+
+        // Wait a moment then start main menu
         this.time.delayedCall(1000, () => {
-          this.scene.start(GameConfig.SCENES.GAME);
+          this.scene.start('MainMenuScene');
         });
       } else {
         this.showAccessDenied(verification.missingAssets);
@@ -200,7 +200,7 @@ export class MenuScene extends Phaser.Scene {
     try {
       await this.walletManager.connectWallet(walletName);
       const address = await this.walletManager.getAddress();
-      
+
       this.statusText.setText(
         `✓ Wallet connected!\n` +
         `Address: ${address?.substring(0, 20)}...${address?.substring(address.length - 10)}\n\n` +
@@ -219,7 +219,7 @@ export class MenuScene extends Phaser.Scene {
 
   private showAccessDenied(missingAssets: any[]) {
     const assetNames = missingAssets.map(a => a.displayName).join(', ');
-    
+
     this.statusText.setText(
       `❌ ACCESS DENIED\n\n` +
       `You need ${assetNames} to play this game.\n\n` +

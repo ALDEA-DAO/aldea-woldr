@@ -13,7 +13,7 @@ const getNetwork = (): 'Mainnet' | 'Preprod' => {
 // Get Blockfrost URL based on network
 const getBlockfrostUrl = (): string => {
   const network = getNetwork();
-  return network === 'Mainnet' 
+  return network === 'Mainnet'
     ? 'https://cardano-mainnet.blockfrost.io/api/v0'
     : 'https://cardano-preprod.blockfrost.io/api/v0';
 };
@@ -21,26 +21,26 @@ const getBlockfrostUrl = (): string => {
 export const CardanoConfig = {
   // Network to use (mainnet or preprod)
   NETWORK: getNetwork(),
-  
+
   // Blockfrost API configuration
   BLOCKFROST_URL: getBlockfrostUrl(),
-  
+
   // Required assets to play the game
   // Format: PolicyID + AssetName (hex encoded)
   REQUIRED_ASSETS: [
     {
       // ALMA Token - Replace with actual policy ID and asset name
-      policyId: 'YOUR_ALMA_POLICY_ID_HERE',
-      assetName: 'ALMA', // Human readable name
-      assetNameHex: '', // Hex encoded asset name (empty for fungible tokens)
+      policyId: '4084c311448c4d9bfa49c7cf6c83d7b1bb54ced13296e6a2d4211196',
+      assetName: 'Test ALDEA', // Human readable name
+      assetNameHex: '5465737420414c444541', // Hex encoded asset name (empty for fungible tokens)
       minAmount: 1, // Minimum amount required (1 for NFT, higher for fungible tokens)
-      displayName: '$ALMA Token'
+      displayName: 'Test ALDEA'
     }
   ],
-  
+
   // Mint URL for users who don't have the required assets
   MINT_URL: 'https://alma.adasouls.io',
-  
+
   // Supported wallets
   SUPPORTED_WALLETS: [
     'nami',
