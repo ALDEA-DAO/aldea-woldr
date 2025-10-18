@@ -11,15 +11,27 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    target: 'es2022',
+    target: 'esnext',
     minify: true,
     sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks: {
-          phaser: ['phaser']
+          phaser: ['phaser'],
+          lucid: ['lucid-cardano']
         }
       }
     }
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'esnext'
+    },
+    // Exclude lucid-cardano from optimization to prevent WASM issues
+    exclude: ['lucid-cardano']
+  },
+  // Enable WASM support
+  worker: {
+    format: 'es'
   }
 });

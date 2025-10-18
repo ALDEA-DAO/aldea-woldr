@@ -21,6 +21,7 @@
     "@latticexyz/utils": "2.2.14",
     "@latticexyz/world": "2.2.14",
     "contracts": "workspace:*",
+    "lucid-cardano": "^0.10.11",
     "phaser": "^3.70.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
