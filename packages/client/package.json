@@ -5,8 +5,9 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "vite build",
-    "dev": "wait-port localhost:8545 && vite",
+    "build": "tsc && vite build",
+    "dev": "vite",
+    "dev:with-chain": "wait-port localhost:8545 && vite",
     "preview": "vite preview",
     "test": "tsc --noEmit"
   },
@@ -20,18 +21,21 @@
     "@latticexyz/utils": "2.2.14",
     "@latticexyz/world": "2.2.14",
     "contracts": "workspace:*",
+    "phaser": "^3.70.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rxjs": "7.5.5",
     "viem": "2.21.19"
   },
   "devDependencies": {
+    "@types/node": "^20.10.0",
     "@types/react": "18.2.22",
     "@types/react-dom": "18.2.7",
     "@vitejs/plugin-react": "^3.1.0",
     "eslint-plugin-react": "7.31.11",
     "eslint-plugin-react-hooks": "4.6.0",
-    "vite": "^4.2.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
     "wait-port": "^1.0.4"
   }
 }
