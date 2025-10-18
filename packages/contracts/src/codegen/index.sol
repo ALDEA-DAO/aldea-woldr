@@ -13,3 +13,4 @@ import { Building, BuildingData } from "./tables/Building.sol";
 import { TribeBonus } from "./tables/TribeBonus.sol";
 import { Recipe, RecipeData } from "./tables/Recipe.sol";
 import { UserNonce } from "./tables/UserNonce.sol";
+import { GameConfig } from "./tables/GameConfig.sol";

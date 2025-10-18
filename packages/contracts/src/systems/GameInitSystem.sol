@@ -2,22 +2,20 @@
 pragma solidity >=0.8.24;
 
 import { System } from "@latticexyz/world/src/System.sol";
-import { ItemType, BuildingType, Recipe, TribeBonus } from "../codegen/index.sol";
+import { ItemType, BuildingType, Recipe, TribeBonus, GameConfig } from "../codegen/index.sol";
 
 contract GameInitSystem is System {
 
-  bool private initialized = false;
-
   // Initialize all game data (items, buildings, recipes, bonuses)
   function initializeGame() public {
-    require(!initialized, "Already initialized");
+    require(!GameConfig.getInitialized(), "Already initialized");
     
     initializeItems();
     initializeBuildings();
     initializeRecipes();
     initializeTribalBonuses();
     
-    initialized = true;
+    GameConfig.setInitialized(true);
   }
 
   // Initialize all item types

@@ -39,7 +39,14 @@ pnpm deploy:local
 
 ### Initialize Game Data
 
-After deployment, call `GameInitSystem.initializeGame()` to set up items, buildings, recipes, and tribal bonuses.
+After deployment, initialize the game data (items, buildings, recipes, and tribal bonuses):
+
+```bash
+cd packages/contracts
+pnpm init:local
+```
+
+This will call `GameInitSystem.initializeGame()` to set up all game configuration.
 
 ### Start Client
 

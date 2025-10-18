@@ -118,5 +118,12 @@ export default defineWorld({
       },
       key: ["user"]
     },
+    // Game configuration and state
+    GameConfig: {
+      schema: {
+        initialized: "bool",
+      },
+      key: []
+    },
   },
 });

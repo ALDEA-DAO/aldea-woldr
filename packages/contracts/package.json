@@ -10,6 +10,7 @@
     "deploy:local": "mud deploy",
     "deploy:redstone": "mud deploy --profile=redstone",
     "dev": "mud dev-contracts",
+    "init:local": "forge script script/InitializeGame.s.sol --rpc-url http://localhost:8545 --broadcast --sig 'run(address)' $(jq -r '.\"31337\".address' worlds.json)",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier --write 'src/**/*.sol'",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix",
