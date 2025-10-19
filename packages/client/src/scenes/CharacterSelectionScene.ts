@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { GameConfig } from '../config/GameConfig';
 import { setupNetwork } from '../mud/setupNetwork';
+import { EthereumWalletManager } from '../managers/EthereumWalletManager';
+import { WalletDisplay } from '../components/WalletDisplay';
 
 export class CharacterSelectionScene extends Phaser.Scene {
   private network: any;
@@ -10,6 +12,8 @@ export class CharacterSelectionScene extends Phaser.Scene {
   private tribeCards: Phaser.GameObjects.Container[] = [];
   private statusText!: Phaser.GameObjects.Text;
   private characterPreview!: Phaser.GameObjects.Graphics;
+  private ethWalletManager!: EthereumWalletManager;
+  private walletDisplay!: WalletDisplay;
 
   // Character classes (matching smart contract enum)
   private readonly classes = [
@@ -44,6 +48,9 @@ export class CharacterSelectionScene extends Phaser.Scene {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
 
+    // Initialize Ethereum wallet manager
+    this.ethWalletManager = new EthereumWalletManager();
+
     // Initialize MUD network connection
     try {
       this.network = await setupNetwork();
@@ -72,6 +79,10 @@ export class CharacterSelectionScene extends Phaser.Scene {
       fontStyle: 'italic'
     }).setOrigin(0.5);
 
+    // Wallet Display (top-right corner)
+    this.walletDisplay = new WalletDisplay(this, this.ethWalletManager);
+    this.walletDisplay.create(width - 120, 40);
+
     // Status text
     this.statusText = this.add.text(width / 2, height - 100, '', {
       fontSize: '16px',
@@ -97,10 +108,10 @@ export class CharacterSelectionScene extends Phaser.Scene {
 
   private createClassSelection(width: number, _height: number) {
     const headerY = 115;
-    const startY = 155;
-    const cardWidth = 95;
-    const cardHeight = 110;
-    const padding = 8;
+    const startY = 175;
+    const cardWidth = 85;
+    const cardHeight = 100;
+    const padding = 10;
     const cols = 6;
 
     // Section header with background (rendered FIRST with high depth)
@@ -180,11 +191,11 @@ export class CharacterSelectionScene extends Phaser.Scene {
   }
 
   private createTribeSelection(width: number, _height: number) {
-    const headerY = 360;
-    const startY = 400;
-    const cardWidth = 165;
-    const cardHeight = 90;
-    const padding = 10;
+    const headerY = 385;
+    const startY = 425;
+    const cardWidth = 155;
+    const cardHeight = 85;
+    const padding = 12;
 
     // Section header with background (rendered FIRST with high depth)
     const headerBg = this.add.rectangle(width / 2, headerY, 450, 45, 0x2c3e50, 0.95);

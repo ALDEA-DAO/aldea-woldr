@@ -29,7 +29,7 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     // Title
-    this.add.text(width / 2, 60, 'ALDEA WOLRD', {
+    this.add.text(width / 2, 60, 'ALDEA WOLDR', {
       fontSize: '52px',
       color: '#00ff00',
       fontStyle: 'bold'
