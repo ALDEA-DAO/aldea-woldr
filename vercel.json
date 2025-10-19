@@ -1,4 +1,4 @@
 {
-  "buildCommand": "cd ../.. && pnpm --filter contracts build && pnpm --filter client build",
+  "buildCommand": "pnpm build",
   "outputDirectory": "dist"
 }
