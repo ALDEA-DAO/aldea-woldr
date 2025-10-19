@@ -76,6 +76,13 @@ export class MainMenuScene extends Phaser.Scene {
         action: () => this.showLeaderboard()
       },
       {
+        label: 'HARBOUR ⚓',
+        description: 'Visit the harbour to bridge tokens and travel',
+        color: 0x3498db,
+        icon: '🚢',
+        action: () => this.goToHarbour()
+      },
+      {
         label: 'THE WORLD',
         description: 'View world statistics and information',
         color: 0x16a085,
@@ -228,6 +235,14 @@ export class MainMenuScene extends Phaser.Scene {
       this.statusText.setText('Leaderboard coming soon!');
       this.statusText.setColor('#95a5a6');
     });
+  }
+
+  private goToHarbour() {
+    this.statusText.setText('⚓ Welcome to the Harbour!');
+    this.statusText.setColor('#3498db');
+
+    // Emit event to open React Bridge Modal
+    window.dispatchEvent(new CustomEvent('openBridge'));
   }
 
   private showWorldStats() {
