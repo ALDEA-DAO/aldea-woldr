@@ -130,28 +130,20 @@ export class EthereumWalletManager {
 
     try {
       // Import viem for contract interaction
-      const { createPublicClient, http, formatUnits, getContract } = await import('viem');
+      const { createPublicClient, http, formatUnits } = await import('viem');
 
       const publicClient = createPublicClient({
         chain: pyropeChain,
         transport: http(EthereumConfig.rpcUrl),
       });
 
-      // Create contract instance
-      const tokenContract = getContract({
+      // Read balance directly using publicClient
+      const balance = await publicClient.readContract({
         address: EthereumConfig.aldeaTokenAddress as `0x${string}`,
         abi: ERC20_ABI,
-        client: publicClient,
+        functionName: 'balanceOf',
+        args: [this.connectedAddress! as `0x${string}`],
       });
-
-      // Validate contract instance
-      if (!tokenContract || !tokenContract.read || !tokenContract.read.balanceOf) {
-        console.error('Invalid contract instance - contract may not exist at address:', EthereumConfig.aldeaTokenAddress);
-        return { balance: '0', error: 'Invalid token contract' };
-      }
-
-      // Get balance
-      const balance = await tokenContract.read.balanceOf([this.connectedAddress! as `0x${string}`]);
       
       // Format balance (18 decimals)
       const formattedBalance = formatUnits(balance as bigint, EthereumConfig.tokenDecimals);
@@ -159,6 +151,13 @@ export class EthereumWalletManager {
       return { balance: formattedBalance };
     } catch (error: any) {
       console.error('Failed to get ALDEA balance:', error);
+      
+      // Check if it's a contract execution error
+      if (error.message?.includes('execution reverted') || error.message?.includes('contract')) {
+        console.error('Contract may not be an ERC-20 token at:', EthereumConfig.aldeaTokenAddress);
+        return { balance: '0', error: 'Invalid ERC-20 contract' };
+      }
+      
       return { balance: '0', error: error.message };
     }
   }
