@@ -12,9 +12,9 @@ export const GameBoyFrame: React.FC<GameBoyFrameProps> = ({ children }) => {
 
   useEffect(() => {
     // Check if user has ALMA tokens
-    // If not connected, we can't check, so default to activated
+    // If not connected, we haven't checked yet, so show NOT activated
     if (!isConnected) {
-      setIsAlmaActivated(true); // Show activated when check is disabled
+      setIsAlmaActivated(false); // Show NOT activated when wallet not connected
     } else {
       const balance = parseFloat(aldeaBalance);
       setIsAlmaActivated(balance > 0);
