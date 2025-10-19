@@ -1,4 +1,4 @@
-import { EthereumConfig, ERC20_ABI } from '../config/EthereumConfig';
+import { EthereumConfig, ERC20_ABI, pyropeChain } from '../config/EthereumConfig';
 
 export class EthereumWalletManager {
   private connectedAddress: string | null = null;
@@ -9,6 +9,50 @@ export class EthereumWalletManager {
    */
   isMetaMaskInstalled(): boolean {
     return typeof window !== 'undefined' && typeof window.ethereum !== 'undefined';
+  }
+
+  /**
+   * Switch to Pyrope Chain
+   */
+  async switchToPyropeChain(): Promise<boolean> {
+    if (!this.provider) return false;
+
+    try {
+      // Try to switch to Pyrope chain
+      await this.provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: `0x${EthereumConfig.chainId.toString(16)}` }], // 0xa9d11
+      });
+      return true;
+    } catch (switchError: any) {
+      // This error code indicates that the chain has not been added to MetaMask
+      if (switchError.code === 4902) {
+        try {
+          await this.provider.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: `0x${EthereumConfig.chainId.toString(16)}`, // 0xa9d11
+                chainName: 'Pyrope',
+                rpcUrls: [EthereumConfig.rpcUrl],
+                nativeCurrency: {
+                  name: 'Pyrope',
+                  symbol: 'PYROPE',
+                  decimals: 18,
+                },
+                blockExplorerUrls: ['https://explorer.pyropechain.com'],
+              },
+            ],
+          });
+          return true;
+        } catch (addError) {
+          console.error('Failed to add Pyrope chain:', addError);
+          return false;
+        }
+      }
+      console.error('Failed to switch to Pyrope chain:', switchError);
+      return false;
+    }
   }
 
   /**
@@ -38,6 +82,21 @@ export class EthereumWalletManager {
       this.connectedAddress = accounts[0];
       this.provider = window.ethereum;
 
+      // Check current chain
+      const chainId = await this.provider.request({ method: 'eth_chainId' });
+      const currentChainId = parseInt(chainId, 16);
+
+      // Switch to Pyrope chain if not already on it
+      if (currentChainId !== EthereumConfig.chainId) {
+        const switched = await this.switchToPyropeChain();
+        if (!switched) {
+          return {
+            success: false,
+            error: 'Please switch to Pyrope Chain (695569) in MetaMask',
+          };
+        }
+      }
+
       // Listen for account changes
       this.setupEventListeners();
 
@@ -65,10 +124,9 @@ export class EthereumWalletManager {
     try {
       // Import viem for contract interaction
       const { createPublicClient, http, formatUnits, getContract } = await import('viem');
-      const { localhost } = await import('viem/chains');
 
       const publicClient = createPublicClient({
-        chain: localhost,
+        chain: pyropeChain,
         transport: http(EthereumConfig.rpcUrl),
       });
 
