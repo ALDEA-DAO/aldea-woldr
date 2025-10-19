@@ -8,24 +8,47 @@ interface BridgeModalProps {
 }
 
 export const BridgeModal: React.FC<BridgeModalProps> = ({ isOpen, onClose }) => {
-  const { isConnected: isMetaMaskConnected } = useWalletStore();
+  const { isConnected: isMetaMaskConnected, address: metaMaskAddress } = useWalletStore();
   const { 
     cardanoAddress, 
-    isCardanoConnected, 
+    isCardanoConnected,
+    aldeaTokenBalance,
+    adaBalance,
     connectCardano, 
     disconnectCardano,
     transferAmount,
+    estimatedFee,
     setTransferAmount,
+    setMaxAmount,
     bridgeToMetaMask
   } = useBridgeStore();
 
   const [isBridging, setIsBridging] = useState(false);
   const [bridgeStatus, setBridgeStatus] = useState('');
+  const [txHash, setTxHash] = useState('');
 
   if (!isOpen) return null;
 
+  const formatTokenBalance = (balance: string) => {
+    // Convert from smallest unit (6 decimals) to display format
+    const balanceNum = Number(balance) / 1_000_000;
+    return balanceNum.toFixed(6);
+  };
+
+  const formatAdaBalance = (balance: string) => {
+    // Convert from lovelace to ADA
+    const balanceNum = Number(balance) / 1_000_000;
+    return balanceNum.toFixed(2);
+  };
+
+  const formatFee = (fee: string) => {
+    // Convert from lovelace to ADA
+    const feeNum = Number(fee) / 1_000_000;
+    return feeNum.toFixed(4);
+  };
+
   const handleBridge = async () => {
-    if (!isMetaMaskConnected) {
+    if (!isMetaMaskConnected || !metaMaskAddress) {
       setBridgeStatus('Please connect MetaMask first!');
       return;
     }
@@ -41,17 +64,26 @@ export const BridgeModal: React.FC<BridgeModalProps> = ({ isOpen, onClose }) => 
     }
 
     setIsBridging(true);
-    setBridgeStatus('Initiating bridge transfer...');
+    setBridgeStatus('Building transaction...');
+    setTxHash('');
 
     try {
-      await bridgeToMetaMask();
-      setBridgeStatus('✓ Bridge transfer successful!');
-      setTimeout(() => {
-        setBridgeStatus('');
-        setTransferAmount('');
-      }, 3000);
+      setBridgeStatus('⏳ Please sign the transaction in your Cardano wallet...');
+      
+      const hash = await bridgeToMetaMask(metaMaskAddress);
+      
+      if (hash) {
+        setTxHash(hash);
+        setBridgeStatus(`✓ Bridge transfer submitted!\nTransaction Hash: ${hash.slice(0, 20)}...`);
+        setTimeout(() => {
+          setBridgeStatus('');
+          setTransferAmount('');
+          setTxHash('');
+        }, 10000);
+      }
     } catch (error: any) {
       setBridgeStatus(`❌ ${error.message || 'Bridge transfer failed'}`);
+      setTimeout(() => setBridgeStatus(''), 5000);
     } finally {
       setIsBridging(false);
     }
@@ -90,6 +122,16 @@ export const BridgeModal: React.FC<BridgeModalProps> = ({ isOpen, onClose }) => 
                 <div className="wallet-address">
                   {cardanoAddress?.slice(0, 20)}...{cardanoAddress?.slice(-10)}
                 </div>
+                <div className="balance-display">
+                  <div className="balance-row">
+                    <span>💎 ALDEA Balance:</span>
+                    <strong>{formatTokenBalance(aldeaTokenBalance)}</strong>
+                  </div>
+                  <div className="balance-row">
+                    <span>₳ ADA Balance:</span>
+                    <strong>{formatAdaBalance(adaBalance)}</strong>
+                  </div>
+                </div>
                 <button 
                   className="disconnect-btn"
                   onClick={disconnectCardano}
@@ -124,17 +166,34 @@ export const BridgeModal: React.FC<BridgeModalProps> = ({ isOpen, onClose }) => 
           {/* Amount Input */}
           {isCardanoConnected && isMetaMaskConnected && (
             <div className="amount-section">
-              <label>Amount to Bridge</label>
-              <input
-                type="number"
-                placeholder="0.00"
-                value={transferAmount}
-                onChange={(e) => setTransferAmount(e.target.value)}
-                className="amount-input"
-                min="0"
-                step="0.01"
-              />
-              <div className="token-label">ALDEA</div>
+              <div className="amount-header">
+                <label>Amount to Bridge</label>
+                <button 
+                  className="max-button"
+                  onClick={setMaxAmount}
+                  type="button"
+                >
+                  MAX
+                </button>
+              </div>
+              <div className="amount-input-container">
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  value={transferAmount}
+                  onChange={(e) => setTransferAmount(e.target.value)}
+                  className="amount-input"
+                  min="0"
+                  step="0.000001"
+                />
+                <span className="token-label-inline">ALDEA</span>
+              </div>
+              {estimatedFee && transferAmount && parseFloat(transferAmount) > 0 && (
+                <div className="fee-display">
+                  <span>Estimated Fee:</span>
+                  <strong>{formatFee(estimatedFee)} ADA</strong>
+                </div>
+              )}
             </div>
           )}
 

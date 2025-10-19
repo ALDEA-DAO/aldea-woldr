@@ -203,6 +203,28 @@
   font-size: 14px;
 }
 
+/* Balance Display */
+.balance-display {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 12px 0;
+}
+
+.balance-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  color: #654321;
+  font-size: 14px;
+}
+
+.balance-row strong {
+  color: #2c3e50;
+  font-size: 15px;
+}
+
 /* Bridge Arrow */
 .bridge-arrow {
   text-align: center;
@@ -219,17 +241,46 @@
   margin-bottom: 20px;
 }
 
-.amount-section label {
-  display: block;
+.amount-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 10px;
+}
+
+.amount-section label {
   color: #654321;
   font-weight: bold;
   font-size: 16px;
+  margin: 0;
+}
+
+.max-button {
+  background: linear-gradient(145deg, #3498db, #2980b9);
+  color: white;
+  border: 2px solid #2574a9;
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-weight: bold;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Georgia', serif;
+}
+
+.max-button:hover {
+  background: linear-gradient(145deg, #5dade2, #3498db);
+  transform: translateY(-2px);
+}
+
+.amount-input-container {
+  position: relative;
+  margin-bottom: 10px;
 }
 
 .amount-input {
   width: 100%;
-  padding: 15px;
+  padding: 15px 80px 15px 15px;
   font-size: 18px;
   border: 3px solid #8B4513;
   border-radius: 10px;
@@ -244,12 +295,30 @@
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
 }
 
-.token-label {
-  text-align: right;
+.token-label-inline {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
   color: #654321;
   font-weight: bold;
-  margin-top: 8px;
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.fee-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: rgba(52, 152, 219, 0.1);
+  border-radius: 8px;
+  color: #2c3e50;
   font-size: 14px;
+}
+
+.fee-display strong {
+  color: #2980b9;
 }
 
 /* Bridge Button */
