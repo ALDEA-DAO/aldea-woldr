@@ -251,17 +251,6 @@ export class MainMenuScene extends Phaser.Scene {
     });
   }
 
-  private showInventory() {
-    this.statusText.setText('Opening inventory...');
-    this.statusText.setColor('#f39c12');
-
-    // TODO: Implement inventory scene
-    this.time.delayedCall(500, () => {
-      this.statusText.setText('Inventory system coming soon!');
-      this.statusText.setColor('#95a5a6');
-    });
-  }
-
   private showSettings() {
     this.statusText.setText('Opening settings...');
     this.statusText.setColor('#f39c12');

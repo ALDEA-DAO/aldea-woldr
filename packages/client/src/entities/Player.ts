@@ -3,12 +3,9 @@ import { GameConfig } from '../config/GameConfig';
 
 export class Player {
   public sprite: Phaser.Physics.Arcade.Sprite;
-  private scene: Phaser.Scene;
   private currentDirection: string = 'down';
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    this.scene = scene;
-    
     // Create sprite
     this.sprite = scene.physics.add.sprite(x, y, 'player-down');
     this.sprite.setCollideWorldBounds(true);

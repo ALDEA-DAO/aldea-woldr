@@ -270,7 +270,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
     return container;
   }
 
-  private createCharacterPreview(width: number, height: number) {
+  private createCharacterPreview(width: number, _height: number) {
     const previewX = width - 200;
     const previewY = 290;
 
@@ -434,9 +434,8 @@ export class CharacterSelectionScene extends Phaser.Scene {
       const deadline = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
       const dummySignature = '0x' + '0'.repeat(130);
 
-      // Get the tribe ID to send to smart contract
-      // tribes array has Random as id 0, but other tribes need their ID adjusted
-      const tribeId = this.tribes[this.selectedTribe].id;
+      // Note: Tribe is currently assigned randomly by the smart contract
+      // tribes array has Random as id 0, but smart contract will handle tribe assignment
       
       // Call smart contract
       const tx = await this.network.worldContract.write.aldea__createCharacter([
