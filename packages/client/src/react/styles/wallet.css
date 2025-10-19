@@ -1,0 +1,103 @@
+/* Wallet Button Styles */
+.wallet-button {
+  background: linear-gradient(145deg, #2c3e50, #34495e);
+  border: 2px solid #00ff00;
+  border-radius: 12px;
+  padding: 12px 20px;
+  color: white;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  min-width: 180px;
+}
+
+.wallet-button:hover {
+  background: linear-gradient(145deg, #34495e, #3d566e);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.wallet-button:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.wallet-button.connecting {
+  background: linear-gradient(145deg, #f39c12, #e67e22);
+  border-color: #f1c40f;
+  cursor: wait;
+  animation: pulse 1.5s infinite;
+}
+
+.wallet-button.connected {
+  background: linear-gradient(145deg, #27ae60, #229954);
+  border-color: #00ff00;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 16px;
+  cursor: default;
+}
+
+.wallet-button.connected:hover {
+  transform: none;
+}
+
+.wallet-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.wallet-address {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.wallet-balance {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #f1c40f;
+  font-weight: bold;
+}
+
+.balance-icon {
+  font-size: 14px;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .wallet-button {
+    min-width: 150px;
+    padding: 10px 16px;
+    font-size: 12px;
+  }
+  
+  .wallet-icon {
+    font-size: 16px;
+  }
+}

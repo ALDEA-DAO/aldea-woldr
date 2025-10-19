@@ -31,7 +31,7 @@ export class MenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Wallet requirement notice
-    this.add.text(width / 2, height / 4 + 100, 'Requires $ALMA to play', {
+    this.add.text(width / 2, height / 4 + 100, 'Requires $ALMA', {
       fontSize: '18px',
       color: '#f39c12',
       fontStyle: 'italic'
@@ -46,7 +46,7 @@ export class MenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Start button
-    const startButton = this.add.text(width / 2, height / 2 + 50, 'START GAME', {
+    const startButton = this.add.text(width / 2, height / 2 + 50, 'ENTER WORLD', {
       fontSize: '32px',
       color: '#ffffff',
       backgroundColor: '#27ae60',
