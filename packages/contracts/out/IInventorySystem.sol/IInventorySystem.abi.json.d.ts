@@ -1,0 +1,102 @@
+declare const abi: [
+  {
+    "type": "function",
+    "name": "aldea__addItem",
+    "inputs": [
+      {
+        "name": "characterId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "itemId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "quantity",
+        "type": "uint64",
+        "internalType": "uint64"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "aldea__getItemCount",
+    "inputs": [
+      {
+        "name": "characterId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "itemId",
+        "type": "uint32",
+        "internalType": "uint32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint64",
+        "internalType": "uint64"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "aldea__removeItem",
+    "inputs": [
+      {
+        "name": "characterId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "slotIndex",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "quantity",
+        "type": "uint64",
+        "internalType": "uint64"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "aldea__transferItem",
+    "inputs": [
+      {
+        "name": "fromCharacterId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "fromSlot",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "toCharacterId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "quantity",
+        "type": "uint64",
+        "internalType": "uint64"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  }
+];
+
+export default abi;

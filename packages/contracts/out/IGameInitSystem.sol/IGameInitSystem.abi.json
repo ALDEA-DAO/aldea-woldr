@@ -1,0 +1,9 @@
+[
+  {
+    "type": "function",
+    "name": "aldea__initializeGame",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  }
+]

@@ -1,0 +1,104 @@
+declare const abi: [
+  {
+    "type": "function",
+    "name": "onCharacterArrive",
+    "inputs": [
+      {
+        "name": "characterId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "buildingInstanceId",
+        "type": "uint32",
+        "internalType": "uint32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "onCharacterLeave",
+    "inputs": [
+      {
+        "name": "characterId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "buildingInstanceId",
+        "type": "uint32",
+        "internalType": "uint32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "onConstruct",
+    "inputs": [
+      {
+        "name": "characterId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "buildingInstanceId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "payload",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "onUpgrade",
+    "inputs": [
+      {
+        "name": "buildingInstanceId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "newLevel",
+        "type": "uint32",
+        "internalType": "uint32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "use",
+    "inputs": [
+      {
+        "name": "characterId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "buildingInstanceId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "payload",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  }
+];
+
+export default abi;
