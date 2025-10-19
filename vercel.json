@@ -1,6 +1,6 @@
 {
-  "buildCommand": "pnpm --filter client build",
+  "buildCommand": "pnpm --filter=client run build",
   "outputDirectory": "packages/client/dist",
-  "installCommand": "pnpm install --no-frozen-lockfile",
+  "installCommand": "pnpm install --shamefully-hoist --no-frozen-lockfile",
   "framework": null
 }
