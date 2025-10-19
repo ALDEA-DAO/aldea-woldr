@@ -17,7 +17,11 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "@contracts/*": ["../contracts/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "../contracts/out"]
 }
