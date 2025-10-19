@@ -121,6 +121,13 @@ export class EthereumWalletManager {
       return { balance: '0', error: 'Wallet not connected' };
     }
 
+    // Check if token address is configured
+    if (!EthereumConfig.aldeaTokenAddress || 
+        EthereumConfig.aldeaTokenAddress === '0x0000000000000000000000000000000000000000') {
+      console.warn('ALDEA token address not configured. Please set VITE_ALDEA_TOKEN_ADDRESS in .env file');
+      return { balance: '0', error: 'Token address not configured' };
+    }
+
     try {
       // Import viem for contract interaction
       const { createPublicClient, http, formatUnits, getContract } = await import('viem');
@@ -214,6 +221,13 @@ export class EthereumWalletManager {
       return false;
     }
 
+    // Check if token address is configured
+    if (!EthereumConfig.aldeaTokenAddress || 
+        EthereumConfig.aldeaTokenAddress === '0x0000000000000000000000000000000000000000') {
+      console.warn('Cannot poll balance: ALDEA token address not configured');
+      return false;
+    }
+
     const startTime = Date.now();
     const pollInterval = 5000; // Check every 5 seconds
     const initialBalanceNum = parseFloat(initialBalance);
@@ -221,6 +235,13 @@ export class EthereumWalletManager {
     while (Date.now() - startTime < maxWaitMs) {
       try {
         const result = await this.getAldeaBalance();
+        
+        // Skip if error
+        if (result.error) {
+          await new Promise(resolve => setTimeout(resolve, pollInterval));
+          continue;
+        }
+
         const currentBalance = parseFloat(result.balance);
 
         // Check if balance increased
