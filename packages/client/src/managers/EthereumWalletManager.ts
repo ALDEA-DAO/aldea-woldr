@@ -144,6 +144,12 @@ export class EthereumWalletManager {
         client: publicClient,
       });
 
+      // Validate contract instance
+      if (!tokenContract || !tokenContract.read || !tokenContract.read.balanceOf) {
+        console.error('Invalid contract instance - contract may not exist at address:', EthereumConfig.aldeaTokenAddress);
+        return { balance: '0', error: 'Invalid token contract' };
+      }
+
       // Get balance
       const balance = await tokenContract.read.balanceOf([this.connectedAddress! as `0x${string}`]);
       
