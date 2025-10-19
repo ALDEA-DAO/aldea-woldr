@@ -29,7 +29,7 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     // Title
-    this.add.text(width / 2, 60, 'ALDEA WORLD', {
+    this.add.text(width / 2, 60, 'ALDEA WOLRD', {
       fontSize: '52px',
       color: '#00ff00',
       fontStyle: 'bold'
@@ -344,7 +344,7 @@ export class MainMenuScene extends Phaser.Scene {
     if (result.success && result.address) {
       this.statusText.setText(`✓ Connected: ${this.ethWalletManager.formatAddress(result.address)}`);
       this.statusText.setColor('#27ae60');
-      
+
       // Update button display
       await this.updateWalletDisplay(buttonText);
     } else {
@@ -363,13 +363,13 @@ export class MainMenuScene extends Phaser.Scene {
 
     // Fetch and display balance
     const { balance, error } = await this.ethWalletManager.getAldeaBalance();
-    
+
     if (!error) {
       // Show balance below address
       const formattedBalance = parseFloat(balance).toFixed(2);
       this.walletBalanceText.setText(`${formattedBalance} ALDEA`);
       this.walletBalanceText.setVisible(true);
-      
+
       // Adjust text positions for two-line display
       buttonText.setY(-10);
       this.walletBalanceText.setY(8);
