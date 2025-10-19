@@ -1,7 +1,7 @@
 {
-  "buildCommand": "cd packages/client && pnpm install && pnpm build",
+  "buildCommand": "cd packages/client && pnpm build",
   "outputDirectory": "packages/client/dist",
-  "installCommand": "pnpm install",
+  "installCommand": "pnpm install --no-frozen-lockfile",
   "framework": null,
-  "devCommand": "pnpm --filter 'client' run dev"
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./"
 }
