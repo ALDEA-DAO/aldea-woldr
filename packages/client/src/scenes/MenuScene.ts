@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GameConfig } from '../config/GameConfig';
 import { CardanoWalletManager } from '../managers/CardanoWalletManager';
 import { CardanoConfig, SupportedWallet } from '../config/CardanoConfig';
+import { useAlmaStore } from '../stores/almaStore';
 
 export class MenuScene extends Phaser.Scene {
   private walletManager: CardanoWalletManager;
@@ -91,6 +92,9 @@ export class MenuScene extends Phaser.Scene {
       this.statusText.setText('🔧 Dev Mode: Skipping wallet verification...\nLoading menu...');
       this.statusText.setColor('#f39c12');
 
+      // Set ALMA as activated when bypassing verification
+      useAlmaStore.getState().setAlmaActivated(true);
+
       this.time.delayedCall(1000, () => {
         this.scene.start('MainMenuScene');
       });
@@ -114,17 +118,24 @@ export class MenuScene extends Phaser.Scene {
         this.statusText.setText('✓ Access granted! Loading menu...');
         this.statusText.setColor('#27ae60');
 
+        // Set ALMA as activated when NFT verification succeeds
+        useAlmaStore.getState().setAlmaActivated(true);
+
         // Wait a moment then start main menu
         this.time.delayedCall(1000, () => {
           this.scene.start('MainMenuScene');
         });
       } else {
+        // NFT verification failed - ALMA not activated
+        useAlmaStore.getState().setAlmaActivated(false);
         this.showAccessDenied(verification.missingAssets);
       }
     } catch (error) {
       console.error('Verification failed:', error);
       this.statusText.setText('❌ Failed to verify wallet. Please try again.');
       this.statusText.setColor('#e74c3c');
+      // Verification error - ALMA not activated
+      useAlmaStore.getState().setAlmaActivated(false);
     }
   }
 

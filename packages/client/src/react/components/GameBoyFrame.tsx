@@ -1,25 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { WalletButton } from './WalletButton';
-import { useWalletStore } from '../../stores/walletStore';
+import { useAlmaStore } from '../../stores/almaStore';
 
 interface GameBoyFrameProps {
   children: React.ReactNode;
 }
 
 export const GameBoyFrame: React.FC<GameBoyFrameProps> = ({ children }) => {
-  const { aldeaBalance, isConnected } = useWalletStore();
-  const [isAlmaActivated, setIsAlmaActivated] = useState(false);
-
-  useEffect(() => {
-    // Check if user has ALMA tokens
-    // If not connected, we haven't checked yet, so show NOT activated
-    if (!isConnected) {
-      setIsAlmaActivated(false); // Show NOT activated when wallet not connected
-    } else {
-      const balance = parseFloat(aldeaBalance);
-      setIsAlmaActivated(balance > 0);
-    }
-  }, [aldeaBalance, isConnected]);
+  // ALMA Activation is based on Cardano NFT verification, not Ethereum wallet
+  const { isAlmaActivated } = useAlmaStore();
 
   return (
     <div className="gameboy-container">
@@ -41,7 +30,7 @@ export const GameBoyFrame: React.FC<GameBoyFrameProps> = ({ children }) => {
             <span className={`status-dot ${isAlmaActivated ? 'active' : 'inactive'}`}></span>
             {isAlmaActivated ? 'ALMA ACTIVATED' : 'ALMA NOT ACTIVATED'}
           </div>
-          
+
           {/* Game Screen */}
           <div className="game-screen">
             {children}
