@@ -201,6 +201,44 @@ export class EthereumWalletManager {
       window.location.reload();
     });
   }
+
+  /**
+   * Poll for balance increase (minting detected)
+   * Returns true when balance increases above initial balance
+   */
+  async waitForBalanceIncrease(
+    initialBalance: string,
+    maxWaitMs: number = 300000 // 5 minutes
+  ): Promise<boolean> {
+    if (!this.connectedAddress) {
+      return false;
+    }
+
+    const startTime = Date.now();
+    const pollInterval = 5000; // Check every 5 seconds
+    const initialBalanceNum = parseFloat(initialBalance);
+
+    while (Date.now() - startTime < maxWaitMs) {
+      try {
+        const result = await this.getAldeaBalance();
+        const currentBalance = parseFloat(result.balance);
+
+        // Check if balance increased
+        if (currentBalance > initialBalanceNum) {
+          console.log(`Balance increased from ${initialBalanceNum} to ${currentBalance}`);
+          return true;
+        }
+
+        // Wait before next poll
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+      } catch (error) {
+        console.error('Error checking balance:', error);
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+      }
+    }
+
+    return false;
+  }
 }
 
 // Global declarations

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useWalletStore } from '../../stores/walletStore';
 import { useBridgeStore } from '../../stores/bridgeStore';
+import { TransactionStatusModal, TransactionStage } from './TransactionStatusModal';
 
 interface BridgeModalProps {
   isOpen: boolean;
@@ -8,7 +9,7 @@ interface BridgeModalProps {
 }
 
 export const BridgeModal: React.FC<BridgeModalProps> = ({ isOpen, onClose }) => {
-  const { isConnected: isMetaMaskConnected, address: metaMaskAddress } = useWalletStore();
+  const { isConnected: isMetaMaskConnected, address: metaMaskAddress, aldeaBalance: pyropeBalance, walletManager, refreshBalance } = useWalletStore();
   const { 
     cardanoAddress, 
     isCardanoConnected,
@@ -20,12 +21,16 @@ export const BridgeModal: React.FC<BridgeModalProps> = ({ isOpen, onClose }) => 
     estimatedFee,
     setTransferAmount,
     setMaxAmount,
-    bridgeToMetaMask
+    bridgeToMetaMask,
+    cardanoWalletManager
   } = useBridgeStore();
 
   const [isBridging, setIsBridging] = useState(false);
   const [bridgeStatus, setBridgeStatus] = useState('');
   const [txHash, setTxHash] = useState('');
+  const [showTxStatus, setShowTxStatus] = useState(false);
+  const [txStage, setTxStage] = useState<TransactionStage>('cardano-confirming');
+  const [txError, setTxError] = useState('');
 
   if (!isOpen) return null;
 
@@ -65,25 +70,74 @@ export const BridgeModal: React.FC<BridgeModalProps> = ({ isOpen, onClose }) => 
 
     setIsBridging(true);
     setBridgeStatus('Building transaction...');
-    setTxHash('');
+    setTxError('');
 
     try {
+      // Get initial Pyrope balance
+      const initialBalance = pyropeBalance;
+
+      // Stage 1: Submit Cardano transaction
       setBridgeStatus('⏳ Please sign the transaction in your Cardano wallet...');
-      
       const hash = await bridgeToMetaMask(metaMaskAddress);
       
-      if (hash) {
-        setTxHash(hash);
-        setBridgeStatus(`✓ Bridge transfer submitted!\nTransaction Hash: ${hash.slice(0, 20)}...`);
-        setTimeout(() => {
-          setBridgeStatus('');
-          setTransferAmount('');
-          setTxHash('');
-        }, 10000);
+      if (!hash) {
+        throw new Error('Transaction failed to submit');
       }
+
+      // Show transaction status modal
+      setTxHash(hash);
+      setTxStage('cardano-confirming');
+      setShowTxStatus(true);
+      setBridgeStatus('');
+
+      // Stage 2: Wait for Cardano confirmation
+      console.log('Waiting for Cardano confirmation...');
+      const cardanoConfirmed = await cardanoWalletManager.waitForCardanoConfirmation(hash, 120000); // 2 min timeout
+
+      if (!cardanoConfirmed) {
+        throw new Error('Cardano transaction confirmation timeout');
+      }
+
+      // Stage 3: Bridge processing
+      setTxStage('bridge-processing');
+      console.log('Cardano confirmed, waiting for bridge...');
+      
+      // Wait a bit for bridge to process
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+      // Stage 4: Wait for Pyrope minting (balance increase)
+      setTxStage('pyrope-minting');
+      console.log('Waiting for Pyrope minting...');
+      const mintingDetected = await walletManager.waitForBalanceIncrease(initialBalance, 300000); // 5 min timeout
+
+      if (!mintingDetected) {
+        throw new Error('Pyrope minting timeout - please check your balance manually');
+      }
+
+      // Stage 5: Completed!
+      setTxStage('completed');
+      console.log('Bridge completed successfully!');
+
+      // Refresh balances
+      await refreshBalance();
+
+      // Auto-close after 5 seconds
+      setTimeout(() => {
+        setShowTxStatus(false);
+        setTransferAmount('');
+        setTxHash('');
+      }, 5000);
+
     } catch (error: any) {
-      setBridgeStatus(`❌ ${error.message || 'Bridge transfer failed'}`);
-      setTimeout(() => setBridgeStatus(''), 5000);
+      console.error('Bridge error:', error);
+      setTxError(error.message || 'Bridge transfer failed');
+      setTxStage('error');
+      
+      // Keep error visible for 10 seconds
+      setTimeout(() => {
+        setShowTxStatus(false);
+        setTxError('');
+      }, 10000);
     } finally {
       setIsBridging(false);
     }
@@ -222,6 +276,19 @@ export const BridgeModal: React.FC<BridgeModalProps> = ({ isOpen, onClose }) => 
           </div>
         </div>
       </div>
+
+      {/* Transaction Status Modal */}
+      <TransactionStatusModal
+        isOpen={showTxStatus}
+        stage={txStage}
+        cardanoTxHash={txHash}
+        error={txError}
+        onClose={() => {
+          setShowTxStatus(false);
+          setTxHash('');
+          setTxError('');
+        }}
+      />
     </div>
   );
 };

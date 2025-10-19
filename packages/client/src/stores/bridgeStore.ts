@@ -6,7 +6,7 @@ const BRIDGE_CONFIG = {
   bridgeAddress: 'addr_test1qrhj03e9dtdhjpu7ju5cdv6kcj2jy5kt4kk34mt70dent5tknpg5syvme5n9v9kynwfke48a8asajnpdhehghne0zgeqlxn3am',
   aldeaPolicyId: '4084c311448c4d9bfa49c7cf6c83d7b1bb54ced13296e6a2d4211196',
   tokenNameHex: '5465737420414c444541',
-  networkName: 'garnet'
+  networkName: 'pyrope'
 };
 
 interface BridgeState {
@@ -16,12 +16,12 @@ interface BridgeState {
   aldeaTokenBalance: string;
   adaBalance: string;
   cardanoWalletManager: CardanoWalletManager;
-  
+
   // Bridge state
   transferAmount: string;
   estimatedFee: string;
   isOpen: boolean;
-  
+
   // Actions
   connectCardano: () => Promise<void>;
   disconnectCardano: () => void;
@@ -52,21 +52,21 @@ export const useBridgeStore = create<BridgeState>((set, get) => ({
     try {
       // Try to connect with first available wallet
       const availableWallets = cardanoWalletManager.getAvailableWallets();
-      
+
       if (availableWallets.length === 0) {
         throw new Error('No Cardano wallet found. Please install Nami, Eternl, or another supported wallet.');
       }
-      
+
       const connected = await cardanoWalletManager.connectWallet(availableWallets[0]);
-      
+
       if (connected) {
         const address = await cardanoWalletManager.getAddress();
-        
+
         set({
           cardanoAddress: address,
           isCardanoConnected: true
         });
-        
+
         // Fetch balances
         await get().refreshBalances();
       } else {
@@ -127,7 +127,7 @@ export const useBridgeStore = create<BridgeState>((set, get) => ({
   setMaxAmount: () => {
     const { aldeaTokenBalance } = get();
     const balance = BigInt(aldeaTokenBalance || '0');
-    
+
     if (balance > 0) {
       // Convert from token smallest unit (assuming 6 decimals for ALDEA)
       const maxAmount = Number(balance) / 1_000_000;
@@ -139,7 +139,7 @@ export const useBridgeStore = create<BridgeState>((set, get) => ({
   // Estimate transaction fee
   estimateFee: async () => {
     const { transferAmount, isCardanoConnected } = get();
-    
+
     if (!isCardanoConnected || !transferAmount || parseFloat(transferAmount) <= 0) {
       set({ estimatedFee: '0' });
       return;
@@ -148,7 +148,7 @@ export const useBridgeStore = create<BridgeState>((set, get) => ({
     try {
       // Convert amount to smallest unit (assuming 6 decimals)
       const amountInSmallestUnit = BigInt(Math.floor(parseFloat(transferAmount) * 1_000_000));
-      
+
       const fee = await cardanoWalletManager.estimateBridgeFee(
         BRIDGE_CONFIG.bridgeAddress,
         BRIDGE_CONFIG.aldeaPolicyId,
@@ -164,10 +164,10 @@ export const useBridgeStore = create<BridgeState>((set, get) => ({
     }
   },
 
-  // Bridge tokens to MetaMask/Garnet
+  // Bridge tokens to MetaMask/Pyrope
   bridgeToMetaMask: async (destinationAddress: string) => {
     const { transferAmount, isCardanoConnected, cardanoAddress } = get();
-    
+
     if (!isCardanoConnected || !cardanoAddress) {
       throw new Error('Cardano wallet not connected');
     }
@@ -183,7 +183,7 @@ export const useBridgeStore = create<BridgeState>((set, get) => ({
     try {
       // Convert amount to smallest unit (assuming 6 decimals)
       const amountInSmallestUnit = BigInt(Math.floor(parseFloat(transferAmount) * 1_000_000));
-      
+
       // Send tokens to bridge address
       const result = await cardanoWalletManager.sendTokensToBridge(
         BRIDGE_CONFIG.bridgeAddress,
@@ -199,7 +199,7 @@ export const useBridgeStore = create<BridgeState>((set, get) => ({
 
       // Refresh balances after successful transaction
       await get().refreshBalances();
-      
+
       return result.txHash;
     } catch (error) {
       console.error('Bridge error:', error);

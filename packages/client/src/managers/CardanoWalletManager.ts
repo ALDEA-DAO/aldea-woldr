@@ -11,7 +11,7 @@ export class CardanoWalletManager {
   private walletApi: WalletApi | null = null;
   private connectedWallet: SupportedWallet | null = null;
 
-  constructor() {}
+  constructor() { }
 
   /**
    * Get available Cardano wallets in the browser
@@ -42,12 +42,12 @@ export class CardanoWalletManager {
 
       // Request wallet access
       this.walletApi = await walletExtension.enable();
-      
+
       // Check if Blockfrost project ID is configured
       const projectId = import.meta.env.VITE_BLOCKFROST_PROJECT_ID;
-      
+
       console.log('Blockfrost Project ID:', projectId ? '✓ Configured' : '✗ Missing');
-      
+
       if (!projectId || projectId === 'preprodYourProjectIdHere' || projectId === 'mainnetYourProjectIdHere') {
         throw new Error(
           'Blockfrost API key not configured. Please:\n' +
@@ -56,14 +56,14 @@ export class CardanoWalletManager {
           '3. Restart the dev server'
         );
       }
-      
+
       // Initialize Lucid with Blockfrost
       console.log('Initializing Lucid with:', {
         network: CardanoConfig.NETWORK,
         blockfrostUrl: CardanoConfig.BLOCKFROST_URL,
         projectIdConfigured: projectId ? '✓' : '✗'
       });
-      
+
       try {
         this.lucid = await Lucid.new(
           new Blockfrost(
@@ -178,10 +178,10 @@ export class CardanoWalletManager {
     try {
       // Get all UTxOs from the wallet
       const utxos = await this.lucid.wallet.getUtxos();
-      
+
       // Aggregate all assets from UTxOs
       const allAssets = this.aggregateAssets(utxos);
-      
+
       // Check each required asset
       const missingAssets: RequiredAsset[] = [];
       const ownedAssets = new Map<string, bigint>();
@@ -189,7 +189,7 @@ export class CardanoWalletManager {
       for (const required of CardanoConfig.REQUIRED_ASSETS) {
         const assetId = this.getAssetId(required.policyId, required.assetNameHex);
         const amount = allAssets.get(assetId) || BigInt(0);
-        
+
         ownedAssets.set(required.displayName, amount);
 
         if (amount < BigInt(required.minAmount)) {
@@ -221,7 +221,7 @@ export class CardanoWalletManager {
           if (amount === undefined || amount === null) {
             continue;
           }
-          
+
           const currentAmount = assets.get(assetId) || BigInt(0);
           assets.set(assetId, currentAmount + BigInt(amount));
         }
@@ -267,14 +267,14 @@ export class CardanoWalletManager {
     try {
       const utxos = await this.lucid.wallet.getUtxos();
       let total = BigInt(0);
-      
+
       for (const utxo of utxos) {
         const lovelace = utxo.assets?.lovelace;
         if (lovelace !== undefined && lovelace !== null) {
           total += BigInt(lovelace);
         }
       }
-      
+
       return total;
     } catch (error) {
       console.error('Failed to get ADA balance:', error);
@@ -294,7 +294,7 @@ export class CardanoWalletManager {
       const utxos = await this.lucid.wallet.getUtxos();
       const assets = this.aggregateAssets(utxos);
       const assetId = this.getAssetId(policyId, tokenNameHex);
-      
+
       return assets.get(assetId) || BigInt(0);
     } catch (error) {
       console.error('Failed to get token balance:', error);
@@ -318,18 +318,19 @@ export class CardanoWalletManager {
 
     try {
       const assetId = policyId + tokenNameHex;
-      
+
       // Build transaction with metadata containing destination address
       const tx = await this.lucid
         .newTx()
-        .payToAddress(bridgeAddress, { 
+        .payToAddress(bridgeAddress, {
           lovelace: BigInt(2000000), // Min ADA (2 ADA)
-          [assetId]: amount 
+          [assetId]: amount
         })
         .attachMetadata(674, {
           msg: ['ALDEA Bridge Transfer'],
+          amount: amount.toString(),
           destination: destinationEthAddress,
-          network: 'garnet'
+          network: 'pyrope'
         })
         .complete();
 
@@ -358,17 +359,17 @@ export class CardanoWalletManager {
 
     try {
       const assetId = policyId + tokenNameHex;
-      
+
       const tx = await this.lucid
         .newTx()
-        .payToAddress(bridgeAddress, { 
+        .payToAddress(bridgeAddress, {
           lovelace: BigInt(2000000),
-          [assetId]: amount 
+          [assetId]: amount
         })
         .attachMetadata(674, {
           msg: ['ALDEA Bridge Transfer'],
           destination: '0x0000000000000000000000000000000000000000',
-          network: 'garnet'
+          network: 'pyrope'
         })
         .complete();
 
@@ -378,6 +379,50 @@ export class CardanoWalletManager {
       // Return estimated fee of ~0.2 ADA
       return BigInt(200000);
     }
+  }
+
+  /**
+   * Wait for Cardano transaction confirmation
+   * Returns true when transaction is confirmed (found in a block)
+   */
+  async waitForCardanoConfirmation(txHash: string, maxWaitMs: number = 60000): Promise<boolean> {
+    if (!this.lucid) {
+      return false;
+    }
+
+    const startTime = Date.now();
+    const pollInterval = 3000; // Check every 3 seconds
+
+    while (Date.now() - startTime < maxWaitMs) {
+      try {
+        // Use Blockfrost API to check transaction status
+        const projectId = import.meta.env.VITE_BLOCKFROST_PROJECT_ID;
+        const network = CardanoConfig.NETWORK === 'Mainnet' ? 'mainnet' : 'preprod';
+        const url = `https://cardano-${network}.blockfrost.io/api/v0/txs/${txHash}`;
+
+        const response = await fetch(url, {
+          headers: {
+            'project_id': projectId
+          }
+        });
+
+        if (response.ok) {
+          const txData = await response.json();
+          // If transaction has block info, it's confirmed
+          if (txData.block) {
+            return true;
+          }
+        }
+
+        // Wait before next poll
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+      } catch (error) {
+        console.error('Error checking transaction status:', error);
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+      }
+    }
+
+    return false;
   }
 }
 
