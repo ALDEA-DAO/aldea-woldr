@@ -1,11 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { WalletButton } from './WalletButton';
+import { useWalletStore } from '../../stores/walletStore';
 
 interface GameBoyFrameProps {
   children: React.ReactNode;
 }
 
 export const GameBoyFrame: React.FC<GameBoyFrameProps> = ({ children }) => {
+  const { aldeaBalance, isConnected } = useWalletStore();
+  const [isAlmaActivated, setIsAlmaActivated] = useState(false);
+
+  useEffect(() => {
+    // Check if user has ALMA tokens
+    // If not connected, we can't check, so default to activated
+    if (!isConnected) {
+      setIsAlmaActivated(true); // Show activated when check is disabled
+    } else {
+      const balance = parseFloat(aldeaBalance);
+      setIsAlmaActivated(balance > 0);
+    }
+  }, [aldeaBalance, isConnected]);
+
   return (
     <div className="gameboy-container">
       <div className="gameboy-frame">
@@ -22,7 +37,10 @@ export const GameBoyFrame: React.FC<GameBoyFrameProps> = ({ children }) => {
 
         {/* Screen Bezel */}
         <div className="screen-bezel">
-          <div className="screen-label">DOT MATRIX WITH STEREO SOUND</div>
+          <div className={`screen-label ${isAlmaActivated ? 'activated' : 'not-activated'}`}>
+            <span className={`status-dot ${isAlmaActivated ? 'active' : 'inactive'}`}></span>
+            {isAlmaActivated ? 'ALMA ACTIVATED' : 'ALMA NOT ACTIVATED'}
+          </div>
           
           {/* Game Screen */}
           <div className="game-screen">

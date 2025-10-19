@@ -71,6 +71,47 @@
   text-align: center;
   margin-bottom: 10px;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: color 0.3s ease;
+}
+
+.screen-label.activated {
+  color: #00ff00;
+}
+
+.screen-label.not-activated {
+  color: #ff4444;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 8px currentColor;
+  animation: pulse-dot 2s infinite;
+}
+
+.status-dot.active {
+  background: #00ff00;
+  box-shadow: 0 0 12px #00ff00, 0 0 20px rgba(0, 255, 0, 0.5);
+}
+
+.status-dot.inactive {
+  background: #ff4444;
+  box-shadow: 0 0 12px #ff4444, 0 0 20px rgba(255, 68, 68, 0.5);
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 /* Game Screen */
