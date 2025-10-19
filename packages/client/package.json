@@ -5,6 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "prebuild": "cd ../contracts && pnpm build && cd ../client && mkdir -p src/abi && cp ../contracts/out/IWorld.sol/IWorld.abi.json src/abi/",
     "build": "tsc && vite build",
     "dev": "vite",
     "dev:with-chain": "wait-port localhost:8545 && vite",

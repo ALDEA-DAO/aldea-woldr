@@ -1,6 +1,6 @@
 import { createPublicClient, createWalletClient, custom, http, getContract } from 'viem';
 import { localhost } from 'viem/chains';
-import IWorldAbi from '../../../contracts/out/IWorld.sol/IWorld.abi.json';
+import IWorldAbi from '../abi/IWorld.abi.json';
 
 export interface NetworkConfig {
   publicClient: any;
