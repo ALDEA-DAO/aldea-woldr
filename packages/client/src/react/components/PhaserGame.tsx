@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
-import { GameConfig } from '../../config/GameConfig';
 import { BootScene } from '../../scenes/BootScene';
 import { MainMenuScene } from '../../scenes/MainMenuScene';
 import { CharacterSelectionScene } from '../../scenes/CharacterSelectionScene';
@@ -16,10 +15,10 @@ export const PhaserGame: React.FC = () => {
 
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
-      width: GameConfig.width,
-      height: GameConfig.height,
+      width: 1280,
+      height: 720,
       parent: containerRef.current,
-      backgroundColor: '#000000',
+      backgroundColor: '#0e1419',
       physics: {
         default: 'arcade',
         arcade: {
@@ -36,7 +35,13 @@ export const PhaserGame: React.FC = () => {
       ],
       scale: {
         mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: 1280,
+        height: 720
+      },
+      render: {
+        pixelArt: true,
+        antialias: false
       }
     };
 
@@ -56,10 +61,7 @@ export const PhaserGame: React.FC = () => {
       className="phaser-game-container"
       style={{
         width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        height: '100%'
       }}
     />
   );
