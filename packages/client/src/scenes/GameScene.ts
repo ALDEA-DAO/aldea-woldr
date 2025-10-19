@@ -3,8 +3,6 @@ import { GameConfig } from '../config/GameConfig';
 import { Player } from '../entities/Player';
 import { WorldGenerator } from '../utils/WorldGenerator';
 import { GameStateManager } from '../managers/GameStateManager';
-import { EthereumWalletManager } from '../managers/EthereumWalletManager';
-import { WalletDisplay } from '../components/WalletDisplay';
 
 export class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -18,8 +16,6 @@ export class GameScene extends Phaser.Scene {
   private hudText!: Phaser.GameObjects.Text;
   private isPaused: boolean = false;
   private pauseMenuElements: Phaser.GameObjects.GameObject[] = [];
-  private ethWalletManager!: EthereumWalletManager;
-  private walletDisplay!: WalletDisplay;
 
   constructor() {
     super({ key: GameConfig.SCENES.GAME });
@@ -30,9 +26,6 @@ export class GameScene extends Phaser.Scene {
     this.isPaused = false;
     this.pauseMenuElements = [];
     this.physics.resume();
-
-    // Initialize Ethereum wallet manager
-    this.ethWalletManager = new EthereumWalletManager();
 
     // Initialize game state manager
     this.gameStateManager = new GameStateManager(this);
@@ -134,12 +127,6 @@ export class GameScene extends Phaser.Scene {
       backgroundColor: '#000000',
       padding: { x: 10, y: 5 }
     }).setScrollFactor(0).setDepth(100);
-
-    // Wallet Display (top-right corner, fixed to camera)
-    const width = this.cameras.main.width;
-    this.walletDisplay = new WalletDisplay(this, this.ethWalletManager);
-    const walletContainer = this.walletDisplay.create(width - 120, 50);
-    walletContainer.setScrollFactor(0).setDepth(100);
   }
 
   private updateHUD() {

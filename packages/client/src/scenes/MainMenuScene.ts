@@ -1,14 +1,10 @@
 import Phaser from 'phaser';
 import { GameConfig } from '../config/GameConfig';
 import { setupNetwork } from '../mud/setupNetwork';
-import { EthereumWalletManager } from '../managers/EthereumWalletManager';
 
 export class MainMenuScene extends Phaser.Scene {
   private network: any;
   private statusText!: Phaser.GameObjects.Text;
-  private ethWalletManager!: EthereumWalletManager;
-  private walletButton!: Phaser.GameObjects.Container;
-  private walletBalanceText!: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: 'MainMenuScene' });
@@ -17,9 +13,6 @@ export class MainMenuScene extends Phaser.Scene {
   async create() {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
-
-    // Initialize Ethereum wallet manager
-    this.ethWalletManager = new EthereumWalletManager();
 
     // Initialize MUD network
     try {
@@ -53,9 +46,6 @@ export class MainMenuScene extends Phaser.Scene {
 
     // Add decorative elements
     this.addBackgroundEffects();
-
-    // Create wallet connection button
-    this.createWalletButton(width);
   }
 
   private createMenuOptions(width: number, _height: number) {
@@ -269,113 +259,5 @@ export class MainMenuScene extends Phaser.Scene {
     this.time.delayedCall(500, () => {
       this.scene.start('MenuScene');
     });
-  }
-
-  private createWalletButton(width: number) {
-    const buttonX = width - 150;
-    const buttonY = 30;
-
-    // Create container for wallet button
-    this.walletButton = this.add.container(buttonX, buttonY);
-
-    // Button background
-    const buttonBg = this.add.rectangle(0, 0, 280, 50, 0x3498db, 0.9);
-    buttonBg.setStrokeStyle(2, 0x2980b9);
-    buttonBg.setInteractive({ useHandCursor: true });
-
-    // Icon
-    const icon = this.add.text(-120, 0, '🦊', {
-      fontSize: '24px'
-    }).setOrigin(0.5);
-
-    // Button text
-    const buttonText = this.add.text(-80, 0, 'Connect MetaMask', {
-      fontSize: '16px',
-      color: '#ffffff',
-      fontStyle: 'bold'
-    }).setOrigin(0, 0.5);
-
-    // Balance text (hidden initially)
-    this.walletBalanceText = this.add.text(-80, 0, '', {
-      fontSize: '14px',
-      color: '#ffffff'
-    }).setOrigin(0, 0.5);
-    this.walletBalanceText.setVisible(false);
-
-    this.walletButton.add([buttonBg, icon, buttonText, this.walletBalanceText]);
-    this.walletButton.setDepth(200);
-
-    // Hover effects
-    buttonBg.on('pointerover', () => {
-      buttonBg.setFillStyle(0x5dade2, 0.9);
-    });
-
-    buttonBg.on('pointerout', () => {
-      buttonBg.setFillStyle(0x3498db, 0.9);
-    });
-
-    // Click handler
-    buttonBg.on('pointerdown', async () => {
-      await this.handleWalletConnection(buttonText);
-    });
-
-    // Check if already connected
-    if (this.ethWalletManager.isConnected()) {
-      this.updateWalletDisplay(buttonText);
-    }
-  }
-
-  private async handleWalletConnection(buttonText: Phaser.GameObjects.Text) {
-    if (this.ethWalletManager.isConnected()) {
-      // Already connected, show info
-      this.statusText.setText(`Connected: ${this.ethWalletManager.formatAddress(this.ethWalletManager.getConnectedAddress()!)}`);
-      this.statusText.setColor('#27ae60');
-      return;
-    }
-
-    // Show loading
-    buttonText.setText('Connecting...');
-    this.statusText.setText('Opening MetaMask...');
-    this.statusText.setColor('#f39c12');
-
-    // Connect wallet
-    const result = await this.ethWalletManager.connectWallet();
-
-    if (result.success && result.address) {
-      this.statusText.setText(`✓ Connected: ${this.ethWalletManager.formatAddress(result.address)}`);
-      this.statusText.setColor('#27ae60');
-
-      // Update button display
-      await this.updateWalletDisplay(buttonText);
-    } else {
-      this.statusText.setText(`❌ ${result.error || 'Failed to connect wallet'}`);
-      this.statusText.setColor('#e74c3c');
-      buttonText.setText('Connect MetaMask');
-    }
-  }
-
-  private async updateWalletDisplay(buttonText: Phaser.GameObjects.Text) {
-    const address = this.ethWalletManager.getConnectedAddress();
-    if (!address) return;
-
-    // Update button text to show address
-    buttonText.setText(this.ethWalletManager.formatAddress(address));
-
-    // Fetch and display balance
-    const { balance, error } = await this.ethWalletManager.getAldeaBalance();
-
-    if (!error) {
-      // Show balance below address
-      const formattedBalance = parseFloat(balance).toFixed(2);
-      this.walletBalanceText.setText(`${formattedBalance} ALDEA`);
-      this.walletBalanceText.setVisible(true);
-
-      // Adjust text positions for two-line display
-      buttonText.setY(-10);
-      this.walletBalanceText.setY(8);
-    } else {
-      console.error('Failed to fetch balance:', error);
-      this.walletBalanceText.setVisible(false);
-    }
   }
 }

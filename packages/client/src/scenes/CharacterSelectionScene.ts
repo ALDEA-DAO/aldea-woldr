@@ -1,8 +1,6 @@
 import Phaser from 'phaser';
 import { GameConfig } from '../config/GameConfig';
 import { setupNetwork } from '../mud/setupNetwork';
-import { EthereumWalletManager } from '../managers/EthereumWalletManager';
-import { WalletDisplay } from '../components/WalletDisplay';
 
 export class CharacterSelectionScene extends Phaser.Scene {
   private network: any;
@@ -12,8 +10,6 @@ export class CharacterSelectionScene extends Phaser.Scene {
   private tribeCards: Phaser.GameObjects.Container[] = [];
   private statusText!: Phaser.GameObjects.Text;
   private characterPreview!: Phaser.GameObjects.Graphics;
-  private ethWalletManager!: EthereumWalletManager;
-  private walletDisplay!: WalletDisplay;
 
   // Character classes (matching smart contract enum)
   private readonly classes = [
@@ -48,9 +44,6 @@ export class CharacterSelectionScene extends Phaser.Scene {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
 
-    // Initialize Ethereum wallet manager
-    this.ethWalletManager = new EthereumWalletManager();
-
     // Initialize MUD network connection
     try {
       this.network = await setupNetwork();
@@ -78,10 +71,6 @@ export class CharacterSelectionScene extends Phaser.Scene {
       color: '#ecf0f1',
       fontStyle: 'italic'
     }).setOrigin(0.5);
-
-    // Wallet Display (top-right corner)
-    this.walletDisplay = new WalletDisplay(this, this.ethWalletManager);
-    this.walletDisplay.create(width - 120, 40);
 
     // Status text
     this.statusText = this.add.text(width / 2, height - 100, '', {
