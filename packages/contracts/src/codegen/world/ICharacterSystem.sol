@@ -29,4 +29,8 @@ interface ICharacterSystem {
   function aldea__withdrawFees(address to, uint256 amount) external;
 
   function aldea__getUserNonce(address user) external view returns (uint256);
+
+  function aldea__getCharacter(
+    uint32 characterId
+  ) external view returns (address player, uint32 class, uint32 tribe, int32 x, int32 y);
 }

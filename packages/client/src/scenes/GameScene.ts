@@ -1,8 +1,11 @@
 import Phaser from 'phaser';
 import { GameConfig } from '../config/GameConfig';
 import { Player } from '../entities/Player';
+import { OtherPlayer } from '../entities/OtherPlayer';
 import { WorldGenerator } from '../utils/WorldGenerator';
 import { GameStateManager } from '../managers/GameStateManager';
+import { NetworkConfig } from '../mud/setupNetwork';
+import { setupCharacterPolling, watchCharacterUpdates, CharacterData } from '../mud/syncStore';
 
 export class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -16,9 +19,29 @@ export class GameScene extends Phaser.Scene {
   private hudText!: Phaser.GameObjects.Text;
   private isPaused: boolean = false;
   private pauseMenuElements: Phaser.GameObjects.GameObject[] = [];
+  
+  // Blockchain integration
+  private network?: NetworkConfig;
+  private characterId?: number;
+  private lastBlockchainPosition = { x: 0, y: 0 };
+  private movementThrottleTime = 2000; // Send transaction every 2 seconds max
+  private lastMovementTransaction = 0;
+  private pendingMovementTransaction = false;
+  
+  // Multiplayer - other players
+  private otherPlayers: Map<number, OtherPlayer> = new Map();
+  private cleanupPolling?: () => void;
+  private cleanupWatcher?: () => void;
 
   constructor() {
     super({ key: GameConfig.SCENES.GAME });
+  }
+
+  init(data: { network?: NetworkConfig; characterId?: number }) {
+    // Receive data from previous scene
+    this.network = data.network;
+    this.characterId = data.characterId;
+    console.log('GameScene initialized with characterId:', this.characterId);
   }
 
   create() {
@@ -27,8 +50,8 @@ export class GameScene extends Phaser.Scene {
     this.pauseMenuElements = [];
     this.physics.resume();
 
-    // Initialize game state manager
-    this.gameStateManager = new GameStateManager(this);
+    // Initialize game state manager with network and characterId
+    this.gameStateManager = new GameStateManager(this, this.network, this.characterId);
 
     // Create world
     this.createWorld();
@@ -65,6 +88,11 @@ export class GameScene extends Phaser.Scene {
       this
     );
 
+    // Setup multiplayer sync if connected to blockchain
+    if (this.network) {
+      this.setupMultiplayer();
+    }
+
     // ESC key for menu
     this.input.keyboard!.on('keydown-ESC', () => {
       if (!this.isPaused) {
@@ -86,6 +114,12 @@ export class GameScene extends Phaser.Scene {
     const down = this.cursors.down.isDown || this.wasd.down.isDown;
 
     this.player.update(left, right, up, down);
+
+    // Check if player has moved significantly and send blockchain transaction
+    this.checkAndSendMovementTransaction();
+
+    // Update other players
+    this.updateOtherPlayers();
 
     // Update HUD
     this.updateHUD();
@@ -131,12 +165,31 @@ export class GameScene extends Phaser.Scene {
 
   private updateHUD() {
     const playerPos = this.player.getPosition();
-    this.hudText.setText([
-      `Position: (${Math.floor(playerPos.x)}, ${Math.floor(playerPos.y)})`,
+    const tileX = Math.floor(playerPos.x / GameConfig.TILE_SIZE);
+    const tileY = Math.floor(playerPos.y / GameConfig.TILE_SIZE);
+    
+    const hudLines = [
+      `Position: (${Math.floor(playerPos.x)}, ${Math.floor(playerPos.y)}) | Tile: (${tileX}, ${tileY})`,
       `Health: ${this.gameStateManager.getPlayerHealth()}`,
       `Coins: ${this.gameStateManager.getCoins()}`,
-      'Press SPACE to interact | ESC to pause'
-    ]);
+    ];
+
+    // Show blockchain status if connected
+    if (this.network && this.characterId) {
+      const bcPos = `Blockchain: (${this.lastBlockchainPosition.x}, ${this.lastBlockchainPosition.y})`;
+      const txStatus = this.pendingMovementTransaction ? ' [TX Pending...]' : '';
+      hudLines.push(bcPos + txStatus);
+      
+      // Show number of other players
+      const playerCount = this.otherPlayers.size;
+      hudLines.push(`Players Online: ${playerCount + 1} (You + ${playerCount} others)`);
+    } else {
+      hudLines.push('Blockchain: Not connected');
+    }
+
+    hudLines.push('Press SPACE to interact | ESC to pause');
+    
+    this.hudText.setText(hudLines);
   }
 
   private handleNPCInteraction(
@@ -273,5 +326,182 @@ export class GameScene extends Phaser.Scene {
       element.destroy();
     });
     this.pauseMenuElements = [];
+  }
+
+  /**
+   * Check if player has moved significantly and send blockchain transaction
+   * This throttles movement updates to avoid spamming the blockchain
+   */
+  private checkAndSendMovementTransaction() {
+    // Only send transactions if we have network and characterId
+    if (!this.network || !this.characterId) {
+      return;
+    }
+
+    // Don't send if a transaction is pending
+    if (this.pendingMovementTransaction) {
+      return;
+    }
+
+    const currentTime = Date.now();
+    const playerPos = this.player.getPosition();
+    
+    // Convert pixel position to tile position (game coordinate system)
+    const tileX = Math.floor(playerPos.x / GameConfig.TILE_SIZE);
+    const tileY = Math.floor(playerPos.y / GameConfig.TILE_SIZE);
+
+    // Calculate distance from last blockchain position
+    const distanceX = Math.abs(tileX - this.lastBlockchainPosition.x);
+    const distanceY = Math.abs(tileY - this.lastBlockchainPosition.y);
+
+    // Check if enough time has passed AND player has moved at least 1 tile
+    const timeElapsed = currentTime - this.lastMovementTransaction >= this.movementThrottleTime;
+    const hasMoved = distanceX > 0 || distanceY > 0;
+
+    if (timeElapsed && hasMoved) {
+      this.sendMovementTransaction(tileX, tileY);
+    }
+  }
+
+  /**
+   * Send a movement transaction to the blockchain
+   */
+  private async sendMovementTransaction(tileX: number, tileY: number) {
+    if (!this.network || !this.characterId) {
+      return;
+    }
+
+    this.pendingMovementTransaction = true;
+
+    try {
+      console.log(`Sending movement transaction: Character ${this.characterId} moving to (${tileX}, ${tileY})`);
+      
+      // Call the moveCharacter function on the smart contract
+      const tx = await this.network.worldContract.write.aldea__moveCharacter([
+        this.characterId,
+        tileX,
+        tileY
+      ]);
+
+      console.log('Movement transaction sent:', tx);
+
+      // Don't wait for confirmation - fire and forget for better UX
+      // The transaction will be mined in the background
+      this.network.publicClient.waitForTransactionReceipt({ hash: tx }).then(() => {
+        console.log('Movement transaction confirmed');
+      }).catch((error: any) => {
+        console.error('Movement transaction failed:', error);
+      });
+
+      // Update tracking variables
+      this.lastBlockchainPosition.x = tileX;
+      this.lastBlockchainPosition.y = tileY;
+      this.lastMovementTransaction = Date.now();
+
+    } catch (error: any) {
+      console.error('Failed to send movement transaction:', error);
+      // Show error to user (optional)
+      // this.showTemporaryMessage('Failed to sync position with blockchain');
+    } finally {
+      this.pendingMovementTransaction = false;
+    }
+  }
+
+  /**
+   * Setup multiplayer syncing from blockchain
+   */
+  private setupMultiplayer() {
+    if (!this.network) return;
+
+    console.log('Setting up multiplayer sync...');
+
+    // Setup polling for all characters (every 3 seconds)
+    this.cleanupPolling = setupCharacterPolling(
+      this.network,
+      (characters) => this.handleCharactersUpdate(characters),
+      3000,
+      100 // Max character ID to check
+    );
+
+    // Also watch for real-time updates via events
+    this.cleanupWatcher = watchCharacterUpdates(
+      this.network,
+      (character) => this.handleCharacterUpdate(character)
+    );
+  }
+
+  /**
+   * Handle bulk character updates from polling
+   */
+  private handleCharactersUpdate(characters: CharacterData[]) {
+    for (const character of characters) {
+      this.handleCharacterUpdate(character);
+    }
+  }
+
+  /**
+   * Handle a single character update
+   */
+  private handleCharacterUpdate(character: CharacterData) {
+    // Ignore our own character
+    if (character.characterId === this.characterId) {
+      return;
+    }
+
+    // Check if this player already exists
+    const existingPlayer = this.otherPlayers.get(character.characterId);
+    
+    if (existingPlayer) {
+      // Update position
+      existingPlayer.updatePosition(character.x, character.y);
+    } else {
+      // Create new other player
+      const otherPlayer = new OtherPlayer(
+        this,
+        character.characterId,
+        character.player,
+        character.x,
+        character.y
+      );
+      this.otherPlayers.set(character.characterId, otherPlayer);
+      console.log(`New player joined: Character #${character.characterId}`);
+    }
+  }
+
+  /**
+   * Update all other players (called every frame)
+   */
+  private updateOtherPlayers() {
+    for (const otherPlayer of this.otherPlayers.values()) {
+      otherPlayer.update();
+    }
+  }
+
+  /**
+   * Cleanup multiplayer resources
+   */
+  private cleanupMultiplayer() {
+    // Stop polling and watching
+    if (this.cleanupPolling) {
+      this.cleanupPolling();
+      this.cleanupPolling = undefined;
+    }
+    if (this.cleanupWatcher) {
+      this.cleanupWatcher();
+      this.cleanupWatcher = undefined;
+    }
+
+    // Remove all other players
+    for (const otherPlayer of this.otherPlayers.values()) {
+      otherPlayer.destroy();
+    }
+    this.otherPlayers.clear();
+  }
+
+  /**
+   * Override shutdown to cleanup multiplayer
+   */
+  shutdown() {
+    this.cleanupMultiplayer();
   }
 }

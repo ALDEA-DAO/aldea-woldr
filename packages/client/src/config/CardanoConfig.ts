@@ -30,16 +30,16 @@ export const CardanoConfig = {
   REQUIRED_ASSETS: [
     {
       // ALMA Token - Replace with actual policy ID and asset name
-      policyId: '4084c311448c4d9bfa49c7cf6c83d7b1bb54ced13296e6a2d4211196',
-      assetName: 'Test ALDEA', // Human readable name
-      assetNameHex: '5465737420414c444541', // Hex encoded asset name (empty for fungible tokens)
+      policyId: '99ad492da6e8a7afeccb91ac7492324686a69a701aa998be519db438',
+      assetName: 'ALDEA', // Human readable name
+      assetNameHex: '414c444541', // Hex encoded asset name (empty for fungible tokens)
       minAmount: 1, // Minimum amount required (1 for NFT, higher for fungible tokens)
       displayName: 'Test ALDEA'
     }
   ],
 
   // Mint URL for users who don't have the required assets
-  MINT_URL: 'https://alma.adasouls.io',
+  MINT_URL: 'https://alma.aldea.world',
 
   // Supported wallets
   SUPPORTED_WALLETS: [

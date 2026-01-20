@@ -8,6 +8,7 @@ import { Character, CharacterData } from "./tables/Character.sol";
 import { World, WorldData } from "./tables/World.sol";
 import { ItemType, ItemTypeData } from "./tables/ItemType.sol";
 import { Inventory, InventoryData } from "./tables/Inventory.sol";
+import { ItemBalance } from "./tables/ItemBalance.sol";
 import { BuildingType, BuildingTypeData } from "./tables/BuildingType.sol";
 import { Building, BuildingData } from "./tables/Building.sol";
 import { TribeBonus } from "./tables/TribeBonus.sol";

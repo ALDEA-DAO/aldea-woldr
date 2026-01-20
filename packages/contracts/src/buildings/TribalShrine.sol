@@ -2,7 +2,7 @@
 pragma solidity >=0.8.24;
 
 import { BuildingKind } from "../ext/IBuildingKind.sol";
-import { Character, Building, Inventory } from "../codegen/index.sol";
+import { Character, Building, Inventory, ItemBalance } from "../codegen/index.sol";
 
 /**
  * @title TribalShrine
@@ -126,14 +126,18 @@ contract TribalShrine is BuildingKind {
     }
 
     /**
-     * @notice Add item to character inventory
-     * @dev Simplified - in production would call InventorySystem
+     * @notice Add item to character inventory - OPTIMIZED with O(1) ItemBalance
+     * @dev Uses ItemBalance table for tracking totals
      */
     function _addItemToInventory(
         uint32 characterId,
         uint32 itemId,
         uint64 quantity
     ) internal {
+        // Update ItemBalance first (O(1) operation)
+        uint64 currentBalance = ItemBalance.getTotalQuantity(characterId, itemId);
+        ItemBalance.setTotalQuantity(characterId, itemId, currentBalance + quantity);
+        
         // Find empty slot or stack
         for (uint32 slot = 0; slot < 20; slot++) {
             uint32 existingItemId = Inventory.getItemId(characterId, slot);

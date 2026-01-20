@@ -2,7 +2,7 @@
 pragma solidity >=0.8.24;
 
 import { System } from "@latticexyz/world/src/System.sol";
-import { Character, Building, BuildingType, Recipe, Inventory, TribeBonus } from "../codegen/index.sol";
+import { Character, Building, BuildingType, Recipe, Inventory, TribeBonus, ItemBalance } from "../codegen/index.sol";
 
 contract CraftingSystem is System {
 
@@ -15,8 +15,8 @@ contract CraftingSystem is System {
     // Verify character exists and caller owns it
     require(Character.getPlayer(characterId) == _msgSender(), "Not character owner");
     
-    // Verify recipe exists
-    require(bytes(Recipe.getName(recipeId)).length > 0, "Invalid recipe");
+    // OPTIMIZATION: Check bytes32 != 0 instead of string length (saves ~3000 gas)
+    require(Recipe.getName(recipeId) != bytes32(0), "Invalid recipe");
     
     // Get building info
     uint32 buildingTypeId = Building.getBuildingTypeId(buildingInstanceId);
@@ -60,7 +60,7 @@ contract CraftingSystem is System {
     addItems(characterId, outputItem, finalOutputQty);
     
     // Update building last used block
-    Building.setLastUsedBlock(buildingInstanceId, block.number);
+    Building.setLastUsedBlock(buildingInstanceId, uint64(block.number));
   }
 
   // Extract resources from an extractor building
@@ -95,7 +95,60 @@ contract CraftingSystem is System {
     }
     
     // Update building last used block
-    Building.setLastUsedBlock(buildingInstanceId, block.number);
+    Building.setLastUsedBlock(buildingInstanceId, uint64(block.number));
+  }
+
+  // OPTIMIZATION: Batch craft multiple recipes in a single transaction
+  function batchCraft(
+    uint32 characterId,
+    uint32 buildingInstanceId,
+    uint32[] calldata recipeIds
+  ) public {
+    require(Character.getPlayer(characterId) == _msgSender(), "Not character owner");
+    
+    uint32 buildingTypeId = Building.getBuildingTypeId(buildingInstanceId);
+    
+    for (uint256 i = 0; i < recipeIds.length; i++) {
+      uint32 recipeId = recipeIds[i];
+      
+      require(Recipe.getName(recipeId) != bytes32(0), "Invalid recipe");
+      
+      uint32 requiredBuildingType = Recipe.getRequiredBuildingType(recipeId);
+      if (requiredBuildingType != 0) {
+        require(buildingTypeId == requiredBuildingType, "Wrong building type");
+      }
+      
+      // Check and consume inputs
+      uint32 input1 = Recipe.getInput1(recipeId);
+      uint64 inputQty1 = Recipe.getInputQty1(recipeId);
+      if (input1 != 0 && inputQty1 > 0) {
+        require(getItemCount(characterId, input1) >= inputQty1, "Insufficient input1");
+        removeItems(characterId, input1, inputQty1);
+      }
+      
+      uint32 input2 = Recipe.getInput2(recipeId);
+      uint64 inputQty2 = Recipe.getInputQty2(recipeId);
+      if (input2 != 0 && inputQty2 > 0) {
+        require(getItemCount(characterId, input2) >= inputQty2, "Insufficient input2");
+        removeItems(characterId, input2, inputQty2);
+      }
+      
+      uint32 input3 = Recipe.getInput3(recipeId);
+      uint64 inputQty3 = Recipe.getInputQty3(recipeId);
+      if (input3 != 0 && inputQty3 > 0) {
+        require(getItemCount(characterId, input3) >= inputQty3, "Insufficient input3");
+        removeItems(characterId, input3, inputQty3);
+      }
+      
+      // Add output with tribal bonus
+      uint32 outputItem = Recipe.getOutput(recipeId);
+      uint64 baseOutputQty = Recipe.getOutputQty(recipeId);
+      uint64 finalOutputQty = applyTribalBonus(characterId, outputItem, baseOutputQty);
+      addItems(characterId, outputItem, finalOutputQty);
+    }
+    
+    // Update building last used block once at the end
+    Building.setLastUsedBlock(buildingInstanceId, uint64(block.number));
   }
 
   // Apply tribal bonus to output quantity
@@ -116,19 +169,19 @@ contract CraftingSystem is System {
     return baseQuantity + bonusAmount;
   }
 
-  // Helper: Get total count of an item in character inventory
+  // Helper: Get total count of an item - O(1) lookup using ItemBalance table
   function getItemCount(uint32 characterId, uint32 itemId) internal view returns (uint64) {
-    uint64 total = 0;
-    for (uint32 slot = 0; slot < 20; slot++) {
-      if (Inventory.getItemId(characterId, slot) == itemId) {
-        total += Inventory.getQuantity(characterId, slot);
-      }
-    }
-    return total;
+    return ItemBalance.getTotalQuantity(characterId, itemId);
   }
 
-  // Helper: Remove items from inventory
+  // Helper: Remove items from inventory with O(1) balance update
   function removeItems(uint32 characterId, uint32 itemId, uint64 quantity) internal {
+    // Update balance first (O(1) operation)
+    uint64 currentBalance = ItemBalance.getTotalQuantity(characterId, itemId);
+    require(currentBalance >= quantity, "Insufficient items");
+    ItemBalance.setTotalQuantity(characterId, itemId, currentBalance - quantity);
+    
+    // Then update slots (still needed for slot-based inventory display)
     uint64 remaining = quantity;
     for (uint32 slot = 0; slot < 20 && remaining > 0; slot++) {
       if (Inventory.getItemId(characterId, slot) == itemId) {
@@ -144,8 +197,12 @@ contract CraftingSystem is System {
     }
   }
 
-  // Helper: Add items to inventory
+  // Helper: Add items to inventory with O(1) balance update
   function addItems(uint32 characterId, uint32 itemId, uint64 quantity) internal {
+    // Update balance first (O(1) operation)
+    uint64 currentBalance = ItemBalance.getTotalQuantity(characterId, itemId);
+    ItemBalance.setTotalQuantity(characterId, itemId, currentBalance + quantity);
+    
     // Try to stack with existing items first
     for (uint32 slot = 0; slot < 20; slot++) {
       if (Inventory.getItemId(characterId, slot) == itemId) {

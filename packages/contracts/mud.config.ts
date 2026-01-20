@@ -33,13 +33,13 @@ export default defineWorld({
       },
       key: [],
     },
-    // Resource/Item definitions
+    // Resource/Item definitions - using bytes32 for gas efficiency
     ItemType: {
       schema: {
         itemId: "uint32",
         category: "uint32", // 0=Resource, 1=Crafted, 2=Special
         stackable: "bool",
-        name: "string",
+        name: "bytes32", // Changed from string for gas efficiency
       },
       key: ["itemId"]
     },
@@ -53,7 +53,16 @@ export default defineWorld({
       },
       key: ["characterId", "slotIndex"]
     },
-    // Building definitions
+    // O(1) item balance lookup - eliminates inventory loops
+    ItemBalance: {
+      schema: {
+        characterId: "uint32",
+        itemId: "uint32",
+        totalQuantity: "uint64",
+      },
+      key: ["characterId", "itemId"]
+    },
+    // Building definitions - using bytes32 for gas efficiency
     BuildingType: {
       schema: {
         buildingId: "uint32",
@@ -67,7 +76,7 @@ export default defineWorld({
         outputQty1: "uint64",
         outputItem2: "uint32",
         outputQty2: "uint64",
-        name: "string",
+        name: "bytes32", // Changed from string for gas efficiency
       },
       key: ["buildingId"]
     },
@@ -80,7 +89,7 @@ export default defineWorld({
         x: "int32",
         y: "int32",
         level: "uint32",
-        lastUsedBlock: "uint256",
+        lastUsedBlock: "uint64", // Changed from uint256 - sufficient until year 584 billion
       },
       key: ["buildingInstanceId"]
     },
@@ -93,7 +102,7 @@ export default defineWorld({
       },
       key: ["tribe", "resourceType"]
     },
-    // Crafting recipes
+    // Crafting recipes - using bytes32 for gas efficiency
     Recipe: {
       schema: {
         recipeId: "uint32",
@@ -106,7 +115,7 @@ export default defineWorld({
         output: "uint32",
         outputQty: "uint64",
         requiredBuildingType: "uint32",
-        name: "string",
+        name: "bytes32", // Changed from string for gas efficiency
       },
       key: ["recipeId"]
     },

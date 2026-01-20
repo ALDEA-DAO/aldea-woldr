@@ -2,7 +2,7 @@
 pragma solidity >=0.8.24;
 
 import { BuildingKind } from "../ext/IBuildingKind.sol";
-import { Character, Building, Inventory } from "../codegen/index.sol";
+import { Character, Building, Inventory, ItemBalance } from "../codegen/index.sol";
 
 /**
  * @title Market
@@ -226,25 +226,26 @@ contract Market is BuildingKind {
         return offers;
     }
 
-    // Helper functions
+    // Helper functions - OPTIMIZED with O(1) ItemBalance lookups
     
     function _getItemCount(uint32 characterId, uint32 itemId) 
         internal 
         view 
         returns (uint64) 
     {
-        uint64 total = 0;
-        for (uint32 slot = 0; slot < 20; slot++) {
-            if (Inventory.getItemId(characterId, slot) == itemId) {
-                total += Inventory.getQuantity(characterId, slot);
-            }
-        }
-        return total;
+        // O(1) lookup using ItemBalance table instead of looping through slots
+        return ItemBalance.getTotalQuantity(characterId, itemId);
     }
 
     function _removeItems(uint32 characterId, uint32 itemId, uint64 quantity) 
         internal 
     {
+        // Update ItemBalance first (O(1) operation)
+        uint64 currentBalance = ItemBalance.getTotalQuantity(characterId, itemId);
+        require(currentBalance >= quantity, "Market: Insufficient items");
+        ItemBalance.setTotalQuantity(characterId, itemId, currentBalance - quantity);
+        
+        // Then update slots for display purposes
         uint64 remaining = quantity;
         for (uint32 slot = 0; slot < 20 && remaining > 0; slot++) {
             if (Inventory.getItemId(characterId, slot) == itemId) {
@@ -263,6 +264,10 @@ contract Market is BuildingKind {
     function _addItems(uint32 characterId, uint32 itemId, uint64 quantity) 
         internal 
     {
+        // Update ItemBalance first (O(1) operation)
+        uint64 currentBalance = ItemBalance.getTotalQuantity(characterId, itemId);
+        ItemBalance.setTotalQuantity(characterId, itemId, currentBalance + quantity);
+        
         // Try to stack first
         for (uint32 slot = 0; slot < 20; slot++) {
             if (Inventory.getItemId(characterId, slot) == itemId) {

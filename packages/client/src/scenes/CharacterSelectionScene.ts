@@ -449,14 +449,34 @@ export class CharacterSelectionScene extends Phaser.Scene {
       this.statusText.setText('Character creation in progress...');
       
       // Wait for transaction
-      await this.network.publicClient.waitForTransactionReceipt({ hash: tx });
+      const receipt = await this.network.publicClient.waitForTransactionReceipt({ hash: tx });
+
+      // Extract characterId from CharacterCreated event logs
+      let characterId: number | undefined;
+      
+      // Find the CharacterCreated event in the logs
+      for (const log of receipt.logs) {
+        try {
+          // The first topic is the event signature, second is the indexed characterId
+          if (log.topics.length >= 2) {
+            // Convert the characterId topic from hex to number
+            characterId = parseInt(log.topics[1], 16);
+            break;
+          }
+        } catch (e) {
+          // Continue searching if parsing fails
+        }
+      }
 
       this.statusText.setText('✓ Character created successfully! Entering world...');
       this.statusText.setColor('#27ae60');
 
-      // Launch game directly after character creation
+      // Launch game directly after character creation, passing network and characterId
       this.time.delayedCall(2000, () => {
-        this.scene.start(GameConfig.SCENES.GAME);
+        this.scene.start(GameConfig.SCENES.GAME, { 
+          network: this.network,
+          characterId: characterId 
+        });
       });
 
     } catch (error: any) {

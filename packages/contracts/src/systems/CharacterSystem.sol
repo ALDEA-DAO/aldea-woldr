@@ -122,18 +122,15 @@ contract CharacterSystem is System {
     // Save new character with tribe and starting position
     Character.set(newCharacterId, msg.sender, class, tribe, 0, 0);
     
-    // Update class population
+    // Update populations in memory first
     uint32[11] memory newCharacterPopulation = world.characterPopulation;
     newCharacterPopulation[class] = newCharacterPopulation[class] + 1;
-    World.setCharacterPopulation(newCharacterPopulation);
-
-    // Update tribe population
+    
     uint32[5] memory newTribePopulation = world.tribePopulation;
     newTribePopulation[tribe] = newTribePopulation[tribe] + 1;
-    World.setTribePopulation(newTribePopulation);
 
-    // Update world population
-    World.setTotalPopulation(newCharacterId);
+    // OPTIMIZATION: Single batched write to World table instead of 3 separate writes
+    World.set(newCharacterId, newCharacterPopulation, newTribePopulation);
     
     emit CharacterCreated(newCharacterId, msg.sender, nftId);
     
@@ -167,6 +164,28 @@ contract CharacterSystem is System {
    */
   function getUserNonce(address user) external view returns (uint256) {
     return UserNonce.getNonce(user);
+  }
+
+  /**
+   * @notice Get character data by ID
+   * @return player Owner address
+   * @return class Character class
+   * @return tribe Character tribe
+   * @return x X coordinate
+   * @return y Y coordinate
+   */
+  function getCharacter(uint32 characterId) external view returns (
+    address player,
+    uint32 class,
+    uint32 tribe,
+    int32 x,
+    int32 y
+  ) {
+    player = Character.getPlayer(characterId);
+    class = Character.getClass(characterId);
+    tribe = Character.getTribe(characterId);
+    x = Character.getX(characterId);
+    y = Character.getY(characterId);
   }
 
 }

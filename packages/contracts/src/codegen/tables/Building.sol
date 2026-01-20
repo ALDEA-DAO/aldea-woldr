@@ -22,7 +22,7 @@ struct BuildingData {
   int32 x;
   int32 y;
   uint32 level;
-  uint256 lastUsedBlock;
+  uint64 lastUsedBlock;
 }
 
 library Building {
@@ -30,12 +30,12 @@ library Building {
   ResourceId constant _tableId = ResourceId.wrap(0x7462616c6465610000000000000000004275696c64696e670000000000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0034060004040404042000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x001c060004040404040800000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint32)
   Schema constant _keySchema = Schema.wrap(0x0004010003000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint32, uint32, int32, int32, uint32, uint256)
-  Schema constant _valueSchema = Schema.wrap(0x0034060003032323031f00000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint32, uint32, int32, int32, uint32, uint64)
+  Schema constant _valueSchema = Schema.wrap(0x001c060003032323030700000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -287,29 +287,29 @@ library Building {
   /**
    * @notice Get lastUsedBlock.
    */
-  function getLastUsedBlock(uint32 buildingInstanceId) internal view returns (uint256 lastUsedBlock) {
+  function getLastUsedBlock(uint32 buildingInstanceId) internal view returns (uint64 lastUsedBlock) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(buildingInstanceId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 5, _fieldLayout);
-    return (uint256(bytes32(_blob)));
+    return (uint64(bytes8(_blob)));
   }
 
   /**
    * @notice Get lastUsedBlock.
    */
-  function _getLastUsedBlock(uint32 buildingInstanceId) internal view returns (uint256 lastUsedBlock) {
+  function _getLastUsedBlock(uint32 buildingInstanceId) internal view returns (uint64 lastUsedBlock) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(buildingInstanceId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 5, _fieldLayout);
-    return (uint256(bytes32(_blob)));
+    return (uint64(bytes8(_blob)));
   }
 
   /**
    * @notice Set lastUsedBlock.
    */
-  function setLastUsedBlock(uint32 buildingInstanceId, uint256 lastUsedBlock) internal {
+  function setLastUsedBlock(uint32 buildingInstanceId, uint64 lastUsedBlock) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(buildingInstanceId));
 
@@ -319,7 +319,7 @@ library Building {
   /**
    * @notice Set lastUsedBlock.
    */
-  function _setLastUsedBlock(uint32 buildingInstanceId, uint256 lastUsedBlock) internal {
+  function _setLastUsedBlock(uint32 buildingInstanceId, uint64 lastUsedBlock) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(buildingInstanceId));
 
@@ -366,7 +366,7 @@ library Building {
     int32 x,
     int32 y,
     uint32 level,
-    uint256 lastUsedBlock
+    uint64 lastUsedBlock
   ) internal {
     bytes memory _staticData = encodeStatic(buildingTypeId, ownerCharacterId, x, y, level, lastUsedBlock);
 
@@ -389,7 +389,7 @@ library Building {
     int32 x,
     int32 y,
     uint32 level,
-    uint256 lastUsedBlock
+    uint64 lastUsedBlock
   ) internal {
     bytes memory _staticData = encodeStatic(buildingTypeId, ownerCharacterId, x, y, level, lastUsedBlock);
 
@@ -454,7 +454,7 @@ library Building {
   )
     internal
     pure
-    returns (uint32 buildingTypeId, uint32 ownerCharacterId, int32 x, int32 y, uint32 level, uint256 lastUsedBlock)
+    returns (uint32 buildingTypeId, uint32 ownerCharacterId, int32 x, int32 y, uint32 level, uint64 lastUsedBlock)
   {
     buildingTypeId = (uint32(Bytes.getBytes4(_blob, 0)));
 
@@ -466,7 +466,7 @@ library Building {
 
     level = (uint32(Bytes.getBytes4(_blob, 16)));
 
-    lastUsedBlock = (uint256(Bytes.getBytes32(_blob, 20)));
+    lastUsedBlock = (uint64(Bytes.getBytes8(_blob, 20)));
   }
 
   /**
@@ -520,7 +520,7 @@ library Building {
     int32 x,
     int32 y,
     uint32 level,
-    uint256 lastUsedBlock
+    uint64 lastUsedBlock
   ) internal pure returns (bytes memory) {
     return abi.encodePacked(buildingTypeId, ownerCharacterId, x, y, level, lastUsedBlock);
   }
@@ -537,7 +537,7 @@ library Building {
     int32 x,
     int32 y,
     uint32 level,
-    uint256 lastUsedBlock
+    uint64 lastUsedBlock
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
     bytes memory _staticData = encodeStatic(buildingTypeId, ownerCharacterId, x, y, level, lastUsedBlock);
 

@@ -28,8 +28,10 @@ export class CardanoWalletManager {
 
   /**
    * Connect to a Cardano wallet
+   * @param walletName - The wallet to connect to
+   * @param forceReconnect - If true, clears previous authorization to force account selection
    */
-  async connectWallet(walletName: SupportedWallet): Promise<boolean> {
+  async connectWallet(walletName: SupportedWallet, forceReconnect: boolean = false): Promise<boolean> {
     try {
       if (typeof window === 'undefined' || !window.cardano) {
         throw new Error('Cardano wallets not available in this browser');
@@ -40,7 +42,22 @@ export class CardanoWalletManager {
         throw new Error(`${walletName} wallet not found`);
       }
 
-      // Request wallet access
+      // Force reconnection if requested (clears previous authorization)
+      if (forceReconnect) {
+        try {
+          // Try experimental.disable() for wallets that support it (like Eternl)
+          if (walletExtension.experimental?.disable) {
+            console.log(`Clearing previous ${walletName} authorization...`);
+            await walletExtension.experimental.disable();
+          }
+        } catch (error) {
+          // Silently ignore if disable() isn't supported
+          console.log('Wallet does not support experimental.disable()');
+        }
+      }
+
+      // Request wallet access - will show account selector if not previously authorized
+      console.log(`Requesting ${walletName} access...`);
       this.walletApi = await walletExtension.enable();
 
       // Check if Blockfrost project ID is configured
@@ -90,7 +107,16 @@ export class CardanoWalletManager {
       // Verify wallet is on the correct network
       await this.verifyNetwork();
 
-      console.log(`Connected to ${walletName} wallet on ${CardanoConfig.NETWORK}`);
+      // Get and log all addresses to verify account selection
+      const allAddresses = await this.getAllAddresses();
+      const currentAddress = await this.lucid.wallet.address();
+      
+      console.log(`✅ Connected to ${walletName} wallet on ${CardanoConfig.NETWORK}`);
+      console.log('📍 Current active address:', currentAddress);
+      if (allAddresses.length > 0) {
+        console.log('📋 All addresses in this account:', allAddresses.slice(0, 3));
+      }
+      
       return true;
     } catch (error: any) {
       console.error('Failed to connect wallet:', error);
@@ -140,7 +166,20 @@ export class CardanoWalletManager {
   /**
    * Disconnect the current wallet
    */
-  disconnect(): void {
+  async disconnect(): Promise<void> {
+    // Try to disable the wallet connection if supported
+    if (this.connectedWallet && typeof window !== 'undefined' && window.cardano) {
+      try {
+        const walletExtension = window.cardano[this.connectedWallet];
+        if (walletExtension?.experimental?.disable) {
+          console.log(`Disconnecting ${this.connectedWallet}...`);
+          await walletExtension.experimental.disable();
+        }
+      } catch (error) {
+        console.log('Could not disable wallet connection:', error);
+      }
+    }
+    
     this.lucid = null;
     this.walletApi = null;
     this.connectedWallet = null;
@@ -160,6 +199,31 @@ export class CardanoWalletManager {
     } catch (error) {
       console.error('Failed to get address:', error);
       return null;
+    }
+  }
+
+  /**
+   * Get all addresses from the wallet (useful for verifying account)
+   */
+  async getAllAddresses(): Promise<string[]> {
+    if (!this.walletApi) {
+      return [];
+    }
+
+    try {
+      // Get used addresses
+      const usedAddresses = await this.walletApi.getUsedAddresses();
+      // Get unused addresses 
+      const unusedAddresses = await this.walletApi.getUnusedAddresses();
+      
+      console.log('📍 Wallet addresses detected:');
+      console.log('  Used addresses:', usedAddresses.length);
+      console.log('  Unused addresses:', unusedAddresses.length);
+      
+      return [...usedAddresses, ...unusedAddresses];
+    } catch (error) {
+      console.error('Failed to get wallet addresses:', error);
+      return [];
     }
   }
 
@@ -320,6 +384,7 @@ export class CardanoWalletManager {
       const assetId = policyId + tokenNameHex;
 
       // Build transaction with metadata containing destination address
+      console.log('Building transaction...');
       const tx = await this.lucid
         .newTx()
         .payToAddress(bridgeAddress, {
@@ -334,13 +399,41 @@ export class CardanoWalletManager {
         })
         .complete();
 
-      const signedTx = await tx.sign().complete();
+      console.log('Transaction built, requesting signature from wallet...');
+      // Sign the transaction (opens wallet popup)
+      const witnessSet = await tx.sign();
+      
+      console.log('Signature received, completing transaction...');
+      // Complete the signed transaction
+      const signedTx = await witnessSet.complete();
+      
+      console.log('Transaction complete, submitting to blockchain...');
       const txHash = await signedTx.submit();
+      
+      console.log('✅ Transaction submitted:', txHash);
 
       return { success: true, txHash };
     } catch (error: any) {
-      console.error('Failed to send tokens:', error);
-      return { success: false, error: error.message || 'Transaction failed' };
+      console.error('❌ Failed to send tokens:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        info: error.info,
+        stack: error.stack
+      });
+      
+      // Provide more helpful error messages
+      let errorMessage = error.message || 'Transaction failed';
+      
+      if (errorMessage.includes('user declined') || errorMessage.includes('User rejected')) {
+        errorMessage = 'Transaction cancelled: You declined to sign the transaction in your wallet';
+      } else if (errorMessage.includes('insufficient') || errorMessage.includes('not enough')) {
+        errorMessage = 'Insufficient funds: Not enough ADA or tokens to complete this transaction';
+      } else if (errorMessage.includes('timeout')) {
+        errorMessage = 'Wallet signing timeout: Please try again and approve the transaction quickly';
+      }
+      
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -436,6 +529,9 @@ declare global {
         apiVersion: string;
         name: string;
         icon: string;
+        experimental?: {
+          disable?(): Promise<void>;
+        };
       };
     };
   }

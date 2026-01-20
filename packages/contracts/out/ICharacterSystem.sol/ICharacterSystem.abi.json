@@ -40,6 +40,45 @@
   },
   {
     "type": "function",
+    "name": "aldea__getCharacter",
+    "inputs": [
+      {
+        "name": "characterId",
+        "type": "uint32",
+        "internalType": "uint32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "player",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "class",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "tribe",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "x",
+        "type": "int32",
+        "internalType": "int32"
+      },
+      {
+        "name": "y",
+        "type": "int32",
+        "internalType": "int32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "aldea__getUserNonce",
     "inputs": [
       {

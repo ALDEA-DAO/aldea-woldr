@@ -27,7 +27,7 @@ struct BuildingTypeData {
   uint64 outputQty1;
   uint32 outputItem2;
   uint64 outputQty2;
-  string name;
+  bytes32 name;
 }
 
 library BuildingType {
@@ -35,12 +35,12 @@ library BuildingType {
   ResourceId constant _tableId = ResourceId.wrap(0x7462616c6465610000000000000000004275696c64696e675479706500000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x00380a0104040408040804080408000000000000000000000000000000000000);
+    FieldLayout.wrap(0x00580b0004040408040804080408200000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint32)
   Schema constant _keySchema = Schema.wrap(0x0004010003000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint32, uint32, uint32, uint64, uint32, uint64, uint32, uint64, uint32, uint64, string)
-  Schema constant _valueSchema = Schema.wrap(0x00380a0103030307030703070307c50000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint32, uint32, uint32, uint64, uint32, uint64, uint32, uint64, uint32, uint64, bytes32)
+  Schema constant _valueSchema = Schema.wrap(0x00580b00030303070307030703075f0000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -507,163 +507,43 @@ library BuildingType {
   /**
    * @notice Get name.
    */
-  function getName(uint32 buildingId) internal view returns (string memory name) {
+  function getName(uint32 buildingId) internal view returns (bytes32 name) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(buildingId));
 
-    bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 0);
-    return (string(_blob));
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 10, _fieldLayout);
+    return (bytes32(_blob));
   }
 
   /**
    * @notice Get name.
    */
-  function _getName(uint32 buildingId) internal view returns (string memory name) {
+  function _getName(uint32 buildingId) internal view returns (bytes32 name) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(buildingId));
 
-    bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 0);
-    return (string(_blob));
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 10, _fieldLayout);
+    return (bytes32(_blob));
   }
 
   /**
    * @notice Set name.
    */
-  function setName(uint32 buildingId, string memory name) internal {
+  function setName(uint32 buildingId, bytes32 name) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(buildingId));
 
-    StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, bytes((name)));
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 10, abi.encodePacked((name)), _fieldLayout);
   }
 
   /**
    * @notice Set name.
    */
-  function _setName(uint32 buildingId, string memory name) internal {
+  function _setName(uint32 buildingId, bytes32 name) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(buildingId));
 
-    StoreCore.setDynamicField(_tableId, _keyTuple, 0, bytes((name)));
-  }
-
-  /**
-   * @notice Get the length of name.
-   */
-  function lengthName(uint32 buildingId) internal view returns (uint256) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(buildingId));
-
-    uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 0);
-    unchecked {
-      return _byteLength / 1;
-    }
-  }
-
-  /**
-   * @notice Get the length of name.
-   */
-  function _lengthName(uint32 buildingId) internal view returns (uint256) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(buildingId));
-
-    uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 0);
-    unchecked {
-      return _byteLength / 1;
-    }
-  }
-
-  /**
-   * @notice Get an item of name.
-   * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
-   */
-  function getItemName(uint32 buildingId, uint256 _index) internal view returns (string memory) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(buildingId));
-
-    unchecked {
-      bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
-      return (string(_blob));
-    }
-  }
-
-  /**
-   * @notice Get an item of name.
-   * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
-   */
-  function _getItemName(uint32 buildingId, uint256 _index) internal view returns (string memory) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(buildingId));
-
-    unchecked {
-      bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
-      return (string(_blob));
-    }
-  }
-
-  /**
-   * @notice Push a slice to name.
-   */
-  function pushName(uint32 buildingId, string memory _slice) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(buildingId));
-
-    StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
-  }
-
-  /**
-   * @notice Push a slice to name.
-   */
-  function _pushName(uint32 buildingId, string memory _slice) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(buildingId));
-
-    StoreCore.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
-  }
-
-  /**
-   * @notice Pop a slice from name.
-   */
-  function popName(uint32 buildingId) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(buildingId));
-
-    StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 0, 1);
-  }
-
-  /**
-   * @notice Pop a slice from name.
-   */
-  function _popName(uint32 buildingId) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(buildingId));
-
-    StoreCore.popFromDynamicField(_tableId, _keyTuple, 0, 1);
-  }
-
-  /**
-   * @notice Update a slice of name at `_index`.
-   */
-  function updateName(uint32 buildingId, uint256 _index, string memory _slice) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(buildingId));
-
-    unchecked {
-      bytes memory _encoded = bytes((_slice));
-      StoreSwitch.spliceDynamicData(_tableId, _keyTuple, 0, uint40(_index * 1), uint40(_encoded.length), _encoded);
-    }
-  }
-
-  /**
-   * @notice Update a slice of name at `_index`.
-   */
-  function _updateName(uint32 buildingId, uint256 _index, string memory _slice) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(buildingId));
-
-    unchecked {
-      bytes memory _encoded = bytes((_slice));
-      StoreCore.spliceDynamicData(_tableId, _keyTuple, 0, uint40(_index * 1), uint40(_encoded.length), _encoded);
-    }
+    StoreCore.setStaticField(_tableId, _keyTuple, 10, abi.encodePacked((name)), _fieldLayout);
   }
 
   /**
@@ -711,7 +591,7 @@ library BuildingType {
     uint64 outputQty1,
     uint32 outputItem2,
     uint64 outputQty2,
-    string memory name
+    bytes32 name
   ) internal {
     bytes memory _staticData = encodeStatic(
       category,
@@ -723,11 +603,12 @@ library BuildingType {
       outputItem1,
       outputQty1,
       outputItem2,
-      outputQty2
+      outputQty2,
+      name
     );
 
-    EncodedLengths _encodedLengths = encodeLengths(name);
-    bytes memory _dynamicData = encodeDynamic(name);
+    EncodedLengths _encodedLengths;
+    bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(buildingId));
@@ -750,7 +631,7 @@ library BuildingType {
     uint64 outputQty1,
     uint32 outputItem2,
     uint64 outputQty2,
-    string memory name
+    bytes32 name
   ) internal {
     bytes memory _staticData = encodeStatic(
       category,
@@ -762,11 +643,12 @@ library BuildingType {
       outputItem1,
       outputQty1,
       outputItem2,
-      outputQty2
+      outputQty2,
+      name
     );
 
-    EncodedLengths _encodedLengths = encodeLengths(name);
-    bytes memory _dynamicData = encodeDynamic(name);
+    EncodedLengths _encodedLengths;
+    bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(buildingId));
@@ -788,11 +670,12 @@ library BuildingType {
       _table.outputItem1,
       _table.outputQty1,
       _table.outputItem2,
-      _table.outputQty2
+      _table.outputQty2,
+      _table.name
     );
 
-    EncodedLengths _encodedLengths = encodeLengths(_table.name);
-    bytes memory _dynamicData = encodeDynamic(_table.name);
+    EncodedLengths _encodedLengths;
+    bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(buildingId));
@@ -814,11 +697,12 @@ library BuildingType {
       _table.outputItem1,
       _table.outputQty1,
       _table.outputItem2,
-      _table.outputQty2
+      _table.outputQty2,
+      _table.name
     );
 
-    EncodedLengths _encodedLengths = encodeLengths(_table.name);
-    bytes memory _dynamicData = encodeDynamic(_table.name);
+    EncodedLengths _encodedLengths;
+    bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(buildingId));
@@ -844,7 +728,8 @@ library BuildingType {
       uint32 outputItem1,
       uint64 outputQty1,
       uint32 outputItem2,
-      uint64 outputQty2
+      uint64 outputQty2,
+      bytes32 name
     )
   {
     category = (uint32(Bytes.getBytes4(_blob, 0)));
@@ -866,33 +751,20 @@ library BuildingType {
     outputItem2 = (uint32(Bytes.getBytes4(_blob, 44)));
 
     outputQty2 = (uint64(Bytes.getBytes8(_blob, 48)));
-  }
 
-  /**
-   * @notice Decode the tightly packed blob of dynamic data using the encoded lengths.
-   */
-  function decodeDynamic(
-    EncodedLengths _encodedLengths,
-    bytes memory _blob
-  ) internal pure returns (string memory name) {
-    uint256 _start;
-    uint256 _end;
-    unchecked {
-      _end = _encodedLengths.atIndex(0);
-    }
-    name = (string(SliceLib.getSubslice(_blob, _start, _end).toBytes()));
+    name = (Bytes.getBytes32(_blob, 56));
   }
 
   /**
    * @notice Decode the tightly packed blobs using this table's field layout.
    * @param _staticData Tightly packed static fields.
-   * @param _encodedLengths Encoded lengths of dynamic fields.
-   * @param _dynamicData Tightly packed dynamic fields.
+   *
+   *
    */
   function decode(
     bytes memory _staticData,
-    EncodedLengths _encodedLengths,
-    bytes memory _dynamicData
+    EncodedLengths,
+    bytes memory
   ) internal pure returns (BuildingTypeData memory _table) {
     (
       _table.category,
@@ -904,10 +776,9 @@ library BuildingType {
       _table.outputItem1,
       _table.outputQty1,
       _table.outputItem2,
-      _table.outputQty2
+      _table.outputQty2,
+      _table.name
     ) = decodeStatic(_staticData);
-
-    (_table.name) = decodeDynamic(_encodedLengths, _dynamicData);
   }
 
   /**
@@ -944,7 +815,8 @@ library BuildingType {
     uint32 outputItem1,
     uint64 outputQty1,
     uint32 outputItem2,
-    uint64 outputQty2
+    uint64 outputQty2,
+    bytes32 name
   ) internal pure returns (bytes memory) {
     return
       abi.encodePacked(
@@ -957,27 +829,9 @@ library BuildingType {
         outputItem1,
         outputQty1,
         outputItem2,
-        outputQty2
+        outputQty2,
+        name
       );
-  }
-
-  /**
-   * @notice Tightly pack dynamic data lengths using this table's schema.
-   * @return _encodedLengths The lengths of the dynamic fields (packed into a single bytes32 value).
-   */
-  function encodeLengths(string memory name) internal pure returns (EncodedLengths _encodedLengths) {
-    // Lengths are effectively checked during copy by 2**40 bytes exceeding gas limits
-    unchecked {
-      _encodedLengths = EncodedLengthsLib.pack(bytes(name).length);
-    }
-  }
-
-  /**
-   * @notice Tightly pack dynamic (variable length) data using this table's schema.
-   * @return The dynamic data, encoded into a sequence of bytes.
-   */
-  function encodeDynamic(string memory name) internal pure returns (bytes memory) {
-    return abi.encodePacked(bytes((name)));
   }
 
   /**
@@ -997,7 +851,7 @@ library BuildingType {
     uint64 outputQty1,
     uint32 outputItem2,
     uint64 outputQty2,
-    string memory name
+    bytes32 name
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
     bytes memory _staticData = encodeStatic(
       category,
@@ -1009,11 +863,12 @@ library BuildingType {
       outputItem1,
       outputQty1,
       outputItem2,
-      outputQty2
+      outputQty2,
+      name
     );
 
-    EncodedLengths _encodedLengths = encodeLengths(name);
-    bytes memory _dynamicData = encodeDynamic(name);
+    EncodedLengths _encodedLengths;
+    bytes memory _dynamicData;
 
     return (_staticData, _encodedLengths, _dynamicData);
   }

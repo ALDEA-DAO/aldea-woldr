@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
+import { NetworkConfig } from '../mud/setupNetwork';
 
 /**
  * GameStateManager
  * 
- * Manages game state and will serve as the bridge for future blockchain integration.
- * This manager can be extended to sync with smart contracts, NFT inventories, etc.
+ * Manages game state and serves as the bridge for blockchain integration.
+ * This manager syncs with smart contracts via MUD.
  */
 export class GameStateManager {
   private _scene: Phaser.Scene; // Reserved for future scene-specific features
@@ -14,12 +15,16 @@ export class GameStateManager {
   private inventory: Map<string, number> = new Map();
   private questProgress: Map<string, any> = new Map();
   
-  // Future blockchain integration points
+  // Blockchain integration
   private walletAddress?: string;
   private nftItems: any[] = [];
+  private characterId?: number;
+  private network?: NetworkConfig;
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, network?: NetworkConfig, characterId?: number) {
     this._scene = scene;
+    this.network = network;
+    this.characterId = characterId;
     this.loadState();
   }
 
@@ -162,5 +167,24 @@ export class GameStateManager {
 
   getNFTItems(): any[] {
     return this.nftItems;
+  }
+
+  // Character ID management
+  getCharacterId(): number | undefined {
+    return this.characterId;
+  }
+
+  setCharacterId(characterId: number) {
+    this.characterId = characterId;
+    this.saveState();
+  }
+
+  // Network access
+  getNetwork(): NetworkConfig | undefined {
+    return this.network;
+  }
+
+  setNetwork(network: NetworkConfig) {
+    this.network = network;
   }
 }

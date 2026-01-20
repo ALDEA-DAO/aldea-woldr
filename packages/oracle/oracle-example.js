@@ -71,14 +71,15 @@ const contractReadOnly = new ethers.Contract(
 app.use(express.json());
 app.use(cors());
 
-// Rate limiting: max 5 requests per minute per IP
-const limiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 5,
-  message: 'Too many verification requests, please try again later'
-});
+// Rate limiting: DISABLED for development
+// Uncomment and configure for production use
+// const limiter = rateLimit({
+//   windowMs: 60 * 1000,
+//   max: 5,
+//   message: 'Too many verification requests, please try again later'
+// });
 
-app.use('/verify-nft', limiter);
+// app.use('/verify-nft', limiter);
 
 // ============================================================================
 // Helper Functions

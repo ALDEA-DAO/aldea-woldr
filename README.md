@@ -60,8 +60,23 @@ pnpm dev
 - **[Game Design](./GAME_DESIGN.md)** - Complete game mechanics and tribal system
 - **[Systems Guide](./packages/contracts/SYSTEMS_GUIDE.md)** - How to use smart contracts
 - **[Downstream Adaptation](./DOWNSTREAM_ADAPTATION.md)** - How Downstream mechanics were adapted
+- **[🎮 Multiplayer System](./MULTIPLAYER.md)** - Decentralized multiplayer implementation (NEW!)
+- **[⚡ Quick Start Multiplayer](./MULTIPLAYER_QUICKSTART.md)** - Test multiplayer in 5 minutes
+- **[Blockchain Movement](./BLOCKCHAIN_MOVEMENT.md)** - On-chain position syncing
 
 ## Key Features
+
+### ✨ Decentralized Multiplayer (NEW!)
+
+**See other players on the map in real-time!** All positions stored on-chain with no central server:
+
+- 👥 **Real-time player syncing** - See all players moving on the map
+- ⛓️ **Fully on-chain** - Positions stored in blockchain smart contracts
+- 🔄 **Auto-sync** - Updates via events and polling every 3 seconds
+- 🎮 **Smooth gameplay** - Fire-and-forget transactions, no gameplay interruption
+- 📊 **Player counter** - HUD shows online player count
+
+👉 [**Quick Start Guide**](./MULTIPLAYER_QUICKSTART.md) - Test in 5 minutes!
 
 ### Tribal System
 

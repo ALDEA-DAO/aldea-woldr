@@ -40,6 +40,29 @@
   },
   {
     "type": "function",
+    "name": "batchCraft",
+    "inputs": [
+      {
+        "name": "characterId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "buildingInstanceId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "recipeIds",
+        "type": "uint32[]",
+        "internalType": "uint32[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "craft",
     "inputs": [
       {

@@ -40,6 +40,29 @@
   },
   {
     "type": "function",
+    "name": "batchMove",
+    "inputs": [
+      {
+        "name": "characterIds",
+        "type": "uint32[]",
+        "internalType": "uint32[]"
+      },
+      {
+        "name": "newXs",
+        "type": "int32[]",
+        "internalType": "int32[]"
+      },
+      {
+        "name": "newYs",
+        "type": "int32[]",
+        "internalType": "int32[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "getPosition",
     "inputs": [
       {
@@ -158,7 +181,7 @@
   },
   {
     "type": "event",
-    "name": "Store_SpliceStaticData",
+    "name": "Store_SetRecord",
     "inputs": [
       {
         "name": "tableId",
@@ -173,13 +196,19 @@
         "internalType": "bytes32[]"
       },
       {
-        "name": "start",
-        "type": "uint48",
+        "name": "staticData",
+        "type": "bytes",
         "indexed": false,
-        "internalType": "uint48"
+        "internalType": "bytes"
       },
       {
-        "name": "data",
+        "name": "encodedLengths",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "EncodedLengths"
+      },
+      {
+        "name": "dynamicData",
         "type": "bytes",
         "indexed": false,
         "internalType": "bytes"

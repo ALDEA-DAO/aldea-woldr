@@ -240,7 +240,7 @@ REQUIRED_ASSETS: [
     assetName: 'ALMA',
     assetNameHex: '414c4d41',  // Hex of "ALMA"
     minAmount: 1,
-    displayName: '$ALMA Token'
+    displayName: 'ALMA Token'
   }
 ]
 ```

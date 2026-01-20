@@ -19,7 +19,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 struct ItemTypeData {
   uint32 category;
   bool stackable;
-  string name;
+  bytes32 name;
 }
 
 library ItemType {
@@ -27,12 +27,12 @@ library ItemType {
   ResourceId constant _tableId = ResourceId.wrap(0x7462616c6465610000000000000000004974656d547970650000000000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0005020104010000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0025030004012000000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint32)
   Schema constant _keySchema = Schema.wrap(0x0004010003000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint32, bool, string)
-  Schema constant _valueSchema = Schema.wrap(0x000502010360c500000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint32, bool, bytes32)
+  Schema constant _valueSchema = Schema.wrap(0x0025030003605f00000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -155,163 +155,43 @@ library ItemType {
   /**
    * @notice Get name.
    */
-  function getName(uint32 itemId) internal view returns (string memory name) {
+  function getName(uint32 itemId) internal view returns (bytes32 name) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemId));
 
-    bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 0);
-    return (string(_blob));
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    return (bytes32(_blob));
   }
 
   /**
    * @notice Get name.
    */
-  function _getName(uint32 itemId) internal view returns (string memory name) {
+  function _getName(uint32 itemId) internal view returns (bytes32 name) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemId));
 
-    bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 0);
-    return (string(_blob));
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    return (bytes32(_blob));
   }
 
   /**
    * @notice Set name.
    */
-  function setName(uint32 itemId, string memory name) internal {
+  function setName(uint32 itemId, bytes32 name) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemId));
 
-    StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, bytes((name)));
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((name)), _fieldLayout);
   }
 
   /**
    * @notice Set name.
    */
-  function _setName(uint32 itemId, string memory name) internal {
+  function _setName(uint32 itemId, bytes32 name) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemId));
 
-    StoreCore.setDynamicField(_tableId, _keyTuple, 0, bytes((name)));
-  }
-
-  /**
-   * @notice Get the length of name.
-   */
-  function lengthName(uint32 itemId) internal view returns (uint256) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(itemId));
-
-    uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 0);
-    unchecked {
-      return _byteLength / 1;
-    }
-  }
-
-  /**
-   * @notice Get the length of name.
-   */
-  function _lengthName(uint32 itemId) internal view returns (uint256) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(itemId));
-
-    uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 0);
-    unchecked {
-      return _byteLength / 1;
-    }
-  }
-
-  /**
-   * @notice Get an item of name.
-   * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
-   */
-  function getItemName(uint32 itemId, uint256 _index) internal view returns (string memory) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(itemId));
-
-    unchecked {
-      bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
-      return (string(_blob));
-    }
-  }
-
-  /**
-   * @notice Get an item of name.
-   * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
-   */
-  function _getItemName(uint32 itemId, uint256 _index) internal view returns (string memory) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(itemId));
-
-    unchecked {
-      bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
-      return (string(_blob));
-    }
-  }
-
-  /**
-   * @notice Push a slice to name.
-   */
-  function pushName(uint32 itemId, string memory _slice) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(itemId));
-
-    StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
-  }
-
-  /**
-   * @notice Push a slice to name.
-   */
-  function _pushName(uint32 itemId, string memory _slice) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(itemId));
-
-    StoreCore.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
-  }
-
-  /**
-   * @notice Pop a slice from name.
-   */
-  function popName(uint32 itemId) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(itemId));
-
-    StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 0, 1);
-  }
-
-  /**
-   * @notice Pop a slice from name.
-   */
-  function _popName(uint32 itemId) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(itemId));
-
-    StoreCore.popFromDynamicField(_tableId, _keyTuple, 0, 1);
-  }
-
-  /**
-   * @notice Update a slice of name at `_index`.
-   */
-  function updateName(uint32 itemId, uint256 _index, string memory _slice) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(itemId));
-
-    unchecked {
-      bytes memory _encoded = bytes((_slice));
-      StoreSwitch.spliceDynamicData(_tableId, _keyTuple, 0, uint40(_index * 1), uint40(_encoded.length), _encoded);
-    }
-  }
-
-  /**
-   * @notice Update a slice of name at `_index`.
-   */
-  function _updateName(uint32 itemId, uint256 _index, string memory _slice) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(itemId));
-
-    unchecked {
-      bytes memory _encoded = bytes((_slice));
-      StoreCore.spliceDynamicData(_tableId, _keyTuple, 0, uint40(_index * 1), uint40(_encoded.length), _encoded);
-    }
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((name)), _fieldLayout);
   }
 
   /**
@@ -347,11 +227,11 @@ library ItemType {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(uint32 itemId, uint32 category, bool stackable, string memory name) internal {
-    bytes memory _staticData = encodeStatic(category, stackable);
+  function set(uint32 itemId, uint32 category, bool stackable, bytes32 name) internal {
+    bytes memory _staticData = encodeStatic(category, stackable, name);
 
-    EncodedLengths _encodedLengths = encodeLengths(name);
-    bytes memory _dynamicData = encodeDynamic(name);
+    EncodedLengths _encodedLengths;
+    bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemId));
@@ -362,11 +242,11 @@ library ItemType {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(uint32 itemId, uint32 category, bool stackable, string memory name) internal {
-    bytes memory _staticData = encodeStatic(category, stackable);
+  function _set(uint32 itemId, uint32 category, bool stackable, bytes32 name) internal {
+    bytes memory _staticData = encodeStatic(category, stackable, name);
 
-    EncodedLengths _encodedLengths = encodeLengths(name);
-    bytes memory _dynamicData = encodeDynamic(name);
+    EncodedLengths _encodedLengths;
+    bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemId));
@@ -378,10 +258,10 @@ library ItemType {
    * @notice Set the full data using the data struct.
    */
   function set(uint32 itemId, ItemTypeData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.category, _table.stackable);
+    bytes memory _staticData = encodeStatic(_table.category, _table.stackable, _table.name);
 
-    EncodedLengths _encodedLengths = encodeLengths(_table.name);
-    bytes memory _dynamicData = encodeDynamic(_table.name);
+    EncodedLengths _encodedLengths;
+    bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemId));
@@ -393,10 +273,10 @@ library ItemType {
    * @notice Set the full data using the data struct.
    */
   function _set(uint32 itemId, ItemTypeData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.category, _table.stackable);
+    bytes memory _staticData = encodeStatic(_table.category, _table.stackable, _table.name);
 
-    EncodedLengths _encodedLengths = encodeLengths(_table.name);
-    bytes memory _dynamicData = encodeDynamic(_table.name);
+    EncodedLengths _encodedLengths;
+    bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemId));
@@ -407,41 +287,26 @@ library ItemType {
   /**
    * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function decodeStatic(bytes memory _blob) internal pure returns (uint32 category, bool stackable) {
+  function decodeStatic(bytes memory _blob) internal pure returns (uint32 category, bool stackable, bytes32 name) {
     category = (uint32(Bytes.getBytes4(_blob, 0)));
 
     stackable = (_toBool(uint8(Bytes.getBytes1(_blob, 4))));
-  }
 
-  /**
-   * @notice Decode the tightly packed blob of dynamic data using the encoded lengths.
-   */
-  function decodeDynamic(
-    EncodedLengths _encodedLengths,
-    bytes memory _blob
-  ) internal pure returns (string memory name) {
-    uint256 _start;
-    uint256 _end;
-    unchecked {
-      _end = _encodedLengths.atIndex(0);
-    }
-    name = (string(SliceLib.getSubslice(_blob, _start, _end).toBytes()));
+    name = (Bytes.getBytes32(_blob, 5));
   }
 
   /**
    * @notice Decode the tightly packed blobs using this table's field layout.
    * @param _staticData Tightly packed static fields.
-   * @param _encodedLengths Encoded lengths of dynamic fields.
-   * @param _dynamicData Tightly packed dynamic fields.
+   *
+   *
    */
   function decode(
     bytes memory _staticData,
-    EncodedLengths _encodedLengths,
-    bytes memory _dynamicData
+    EncodedLengths,
+    bytes memory
   ) internal pure returns (ItemTypeData memory _table) {
-    (_table.category, _table.stackable) = decodeStatic(_staticData);
-
-    (_table.name) = decodeDynamic(_encodedLengths, _dynamicData);
+    (_table.category, _table.stackable, _table.name) = decodeStatic(_staticData);
   }
 
   /**
@@ -468,27 +333,8 @@ library ItemType {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint32 category, bool stackable) internal pure returns (bytes memory) {
-    return abi.encodePacked(category, stackable);
-  }
-
-  /**
-   * @notice Tightly pack dynamic data lengths using this table's schema.
-   * @return _encodedLengths The lengths of the dynamic fields (packed into a single bytes32 value).
-   */
-  function encodeLengths(string memory name) internal pure returns (EncodedLengths _encodedLengths) {
-    // Lengths are effectively checked during copy by 2**40 bytes exceeding gas limits
-    unchecked {
-      _encodedLengths = EncodedLengthsLib.pack(bytes(name).length);
-    }
-  }
-
-  /**
-   * @notice Tightly pack dynamic (variable length) data using this table's schema.
-   * @return The dynamic data, encoded into a sequence of bytes.
-   */
-  function encodeDynamic(string memory name) internal pure returns (bytes memory) {
-    return abi.encodePacked(bytes((name)));
+  function encodeStatic(uint32 category, bool stackable, bytes32 name) internal pure returns (bytes memory) {
+    return abi.encodePacked(category, stackable, name);
   }
 
   /**
@@ -500,12 +346,12 @@ library ItemType {
   function encode(
     uint32 category,
     bool stackable,
-    string memory name
+    bytes32 name
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(category, stackable);
+    bytes memory _staticData = encodeStatic(category, stackable, name);
 
-    EncodedLengths _encodedLengths = encodeLengths(name);
-    bytes memory _dynamicData = encodeDynamic(name);
+    EncodedLengths _encodedLengths;
+    bytes memory _dynamicData;
 
     return (_staticData, _encodedLengths, _dynamicData);
   }

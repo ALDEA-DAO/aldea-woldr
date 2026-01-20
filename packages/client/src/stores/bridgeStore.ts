@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { CardanoWalletManager } from '../managers/CardanoWalletManager';
+import type { SupportedWallet } from '../config/CardanoConfig';
 
 // Bridge configuration
 const BRIDGE_CONFIG = {
-  bridgeAddress: 'addr_test1qrhj03e9dtdhjpu7ju5cdv6kcj2jy5kt4kk34mt70dent5tknpg5syvme5n9v9kynwfke48a8asajnpdhehghne0zgeqlxn3am',
-  aldeaPolicyId: '4084c311448c4d9bfa49c7cf6c83d7b1bb54ced13296e6a2d4211196',
-  tokenNameHex: '5465737420414c444541',
+  bridgeAddress: 'addr_test1qqmceh6c3z9eeq55wz50c5szw59dtyjctyyev8l2xxgwrs8g5a36wxc9qt0ae44gxk9nsxd65dwdu7gr0fal8q0dvxzqzsz4jr',
+  aldeaPolicyId: '99ad492da6e8a7afeccb91ac7492324686a69a701aa998be519db438',
+  tokenNameHex: '414c444541',
   networkName: 'pyrope'
 };
 
@@ -23,8 +24,8 @@ interface BridgeState {
   isOpen: boolean;
 
   // Actions
-  connectCardano: () => Promise<void>;
-  disconnectCardano: () => void;
+  connectCardano: (walletName?: SupportedWallet) => Promise<void>;
+  disconnectCardano: () => Promise<void>;
   setTransferAmount: (amount: string) => void;
   setMaxAmount: () => void;
   refreshBalances: () => Promise<void>;
@@ -48,19 +49,37 @@ export const useBridgeStore = create<BridgeState>((set, get) => ({
   isOpen: false,
 
   // Connect Cardano wallet
-  connectCardano: async () => {
+  connectCardano: async (walletName?: SupportedWallet) => {
     try {
-      // Try to connect with first available wallet
+      // Get available wallets
       const availableWallets = cardanoWalletManager.getAvailableWallets();
 
+      console.log('Available wallets:', availableWallets);
       if (availableWallets.length === 0) {
         throw new Error('No Cardano wallet found. Please install Nami, Eternl, or another supported wallet.');
       }
 
-      const connected = await cardanoWalletManager.connectWallet(availableWallets[0]);
+      // Use specified wallet or throw error asking user to choose
+      if (!walletName) {
+        throw new Error('Please select a wallet to connect');
+      }
+
+      // Verify the selected wallet is available
+      if (!availableWallets.includes(walletName)) {
+        throw new Error(`${walletName} wallet is not installed or not available`);
+      }
+
+      console.log(`Connecting to ${walletName}...`);
+      // Connect to wallet (forceReconnect=false to avoid signing issues)
+      // If you need to switch Eternl accounts, disconnect first then reconnect
+      const connected = await cardanoWalletManager.connectWallet(walletName, false);
 
       if (connected) {
         const address = await cardanoWalletManager.getAddress();
+
+        // Log the connected address for verification
+        console.log('✓ Connected to Cardano wallet:', walletName);
+        console.log('✓ Connected address:', address);
 
         set({
           cardanoAddress: address,
@@ -79,8 +98,8 @@ export const useBridgeStore = create<BridgeState>((set, get) => ({
   },
 
   // Disconnect Cardano wallet
-  disconnectCardano: () => {
-    cardanoWalletManager.disconnect();
+  disconnectCardano: async () => {
+    await cardanoWalletManager.disconnect();
     set({
       cardanoAddress: null,
       isCardanoConnected: false,
@@ -148,6 +167,8 @@ export const useBridgeStore = create<BridgeState>((set, get) => ({
     try {
       // Convert amount to smallest unit (assuming 6 decimals)
       const amountInSmallestUnit = BigInt(Math.floor(parseFloat(transferAmount) * 1_000_000));
+
+      console.log(amountInSmallestUnit);
 
       const fee = await cardanoWalletManager.estimateBridgeFee(
         BRIDGE_CONFIG.bridgeAddress,
